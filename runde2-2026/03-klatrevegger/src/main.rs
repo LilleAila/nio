@@ -73,7 +73,7 @@ fn dijkstra(graph: &Graph, start: usize, end: usize) -> Option<i32> {
         }
 
         for &(neighbor, weight) in &graph[node] {
-            // NODE: The following line differs from standard dijkstra.
+            // NOTE: The following line differs from standard dijkstra.
             // It would have been `cost + weight` instead of `cmp::max(cost, weight)`
             // But here we want the highest weight and not the total weight.
             let next_cost = cmp::max(cost, weight);
