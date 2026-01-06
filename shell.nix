@@ -1,4 +1,5 @@
-with import <nixpkgs> {}; mkShell {
+with import <nixpkgs> { };
+mkShell {
   packages = [
     nixfmt-rfc-style
     nixd
@@ -7,5 +8,9 @@ with import <nixpkgs> {}; mkShell {
     cargo
     rustfmt
     rust-analyzer
+    black
+    pyright
+    ruff
+    python3
   ];
 }
