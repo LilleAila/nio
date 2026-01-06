@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::convert::TryInto;
 use std::io;
 
@@ -39,9 +40,10 @@ fn main() {
     let mut dp: Vec<Vec<usize>> = vec![vec![usize::MAX; n]; n];
     dp[n - 1][n - 1] = 0;
 
-    let mut stack: Vec<(usize, usize)> = vec![(n - 1, n - 1)];
+    let mut stack: VecDeque<(usize, usize)> = VecDeque::new();
+    stack.push_back((n - 1, n - 1));
 
-    while let Some((x, y)) = stack.pop() {
+    while let Some((x, y)) = stack.pop_front() {
         for (nx, ny) in neighbors((x, y), n) {
             // Find the number of changes required to go from each neighbor
             let direction = directions[grid[nx][ny]];
@@ -54,7 +56,12 @@ fn main() {
             // Add the this square to the stack if a better path was found
             if dp[nx][ny] > dp[x][y] + cost {
                 dp[nx][ny] = dp[x][y] + cost;
-                stack.push((nx, ny));
+
+                if cost == 0 {
+                    stack.push_front((nx, ny));
+                } else {
+                    stack.push_back((nx, ny));
+                }
             }
         }
     }
