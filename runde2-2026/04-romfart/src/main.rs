@@ -1,5 +1,5 @@
 use std::convert::TryInto;
-use std::io::{self, Write};
+use std::io::{self, Lines, StdinLock, Write};
 
 fn main() {
     let mut lines = io::stdin().lines();
@@ -28,9 +28,7 @@ fn main() {
         let mut success: i32 = 0;
         while success < n {
             k = (b + a) / 2;
-            println!("send {}", a);
-            io::stdout().flush().unwrap();
-            let result = lines.next().unwrap().unwrap().trim() == "landet";
+            let result = send(k, &mut lines);
             if result {
                 b = k;
                 success += 1;
@@ -38,5 +36,22 @@ fn main() {
                 a = k + 1;
             }
         }
+
+        // let mut k = a;
+        // let mut success: i32 = 0;
+        // while success < n {
+        //     let result = send(k, &mut lines);
+        //     if result {
+        //         success += 1;
+        //     } else if a < b {
+        //         k += 1;
+        //     }
+        // }
     }
+}
+
+fn send(k: i32, lines: &mut Lines<StdinLock>) -> bool {
+    println!("send {}", k);
+    io::stdout().flush().unwrap();
+    return lines.next().unwrap().unwrap().trim() == "landet";
 }
