@@ -17,6 +17,7 @@ fn main() {
         .unwrap();
 
     let mut grid: Vec<Vec<usize>> = vec![vec![0; n]; n];
+    let mut grid: HashMap<(usize, usize), usize> = HashMap::new();
 
     for _ in 0..k {
         let l = lines.next().unwrap().unwrap();
@@ -31,7 +32,7 @@ fn main() {
             "v" => 4,
             _ => panic!(),
         };
-        grid[x][y] = d;
+        grid.insert((x, y), d);
     }
 
     let directions: [(usize, usize); 5] =
@@ -47,11 +48,15 @@ fn main() {
         let current_cost = dp[&(x, y)];
         for (nx, ny) in neighbors((x, y), n) {
             // Find the number of changes required to go from each neighbor
-            let direction = directions[grid[nx][ny]];
-            let cost = if add_coord((nx, ny), direction) == (x, y) {
-                0
-            } else {
-                1
+            let cost = match grid.get(&(nx, ny)) {
+                Some(&d) => {
+                    if add_coord((nx, ny), directions[d]) == (x, y) {
+                        0
+                    } else {
+                        1
+                    }
+                }
+                None => 1,
             };
             let next_cost = current_cost + cost;
 
