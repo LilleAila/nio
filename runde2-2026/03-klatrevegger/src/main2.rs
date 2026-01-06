@@ -1,3 +1,9 @@
+// Solution using a modified dijkstra's algorithm with max instead of +
+// I don't know if the following is correct but
+// Time: O(n^3)
+// Space: O(n^2)
+// Both are too much :(
+
 use std::cmp;
 use std::collections;
 use std::convert::TryInto; // 2021 edition compatibility (try_into) - it seems nio uses 2015
