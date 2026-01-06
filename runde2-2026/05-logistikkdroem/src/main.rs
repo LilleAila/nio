@@ -1,6 +1,9 @@
-use std::collections::{HashMap, VecDeque};
+use std::cmp;
+use std::collections::{self, HashSet};
 use std::convert::TryInto;
 use std::io;
+
+type Graph = Vec<Vec<(usize, usize)>>;
 
 fn main() {
     let mut lines = io::stdin().lines();
@@ -16,8 +19,8 @@ fn main() {
         .try_into()
         .unwrap();
 
-    let mut grid: Vec<Vec<usize>> = vec![vec![0; n]; n];
-    let mut grid: HashMap<(usize, usize), usize> = HashMap::new();
+    let mut graph: Graph = vec![vec![]; n * n];
+    let mut belts: HashSet<(usize, usize)> = HashSet::new();
 
     for _ in 0..k {
         let l = lines.next().unwrap().unwrap();
@@ -26,54 +29,38 @@ fn main() {
         let y: usize = l.next().unwrap().parse().unwrap();
         let d = l.next().unwrap();
         let d = match d {
-            "o" => 1,
-            "n" => 2,
-            "h" => 3,
-            "v" => 4,
+            "o" => (0, 1),
+            "n" => (0, usize::MAX),
+            "h" => (1, 0),
+            "v" => (usize::MAX, 0),
             _ => panic!(),
         };
-        grid.insert((x, y), d);
+        let (tx, ty) = add_coord((x, y), d);
+        belts.insert((index(x, y, n), index(tx, ty, n)));
+        // for (nx, ny) in neighbors((x, y), n) {
+        //     if nx == tx && ny == ty {
+        //         continue;
+        //     }
+        //     belts.insert(index(x, y, n), (index(tx, ty, n), 1));
+        // }
     }
 
-    let directions: [(usize, usize); 5] =
-        [(0, 0), (0, 1), (0, usize::MAX), (1, 0), (usize::MAX, 0)];
-
-    let mut dp: HashMap<(usize, usize), usize> = HashMap::new();
-    dp.insert((n - 1, n - 1), 0);
-
-    let mut stack: VecDeque<(usize, usize)> = VecDeque::new();
-    stack.push_back((n - 1, n - 1));
-
-    while let Some((x, y)) = stack.pop_front() {
-        let current_cost = dp[&(x, y)];
-        for (nx, ny) in neighbors((x, y), n) {
-            // Find the number of changes required to go from each neighbor
-            let cost = match grid.get(&(nx, ny)) {
-                Some(&d) => {
-                    if add_coord((nx, ny), directions[d]) == (x, y) {
-                        0
-                    } else {
-                        1
-                    }
-                }
-                None => 1,
-            };
-            let next_cost = current_cost + cost;
-
-            // Add the this square to the stack if a better path was found
-            if dp.get(&(nx, ny)).map_or(true, |&c| next_cost < c) {
-                dp.insert((nx, ny), next_cost);
-
-                if cost == 0 {
-                    stack.push_front((nx, ny));
+    for x in 0..n {
+        for y in 0..n {
+            let i = index(x, y, n);
+            for (nx, ny) in neighbors((x, y), n) {
+                let ni = index(nx, ny, n);
+                if belts.contains(&(i, ni)) {
+                    graph[i].push((ni, 0));
                 } else {
-                    stack.push_back((nx, ny));
+                    graph[i].push((ni, 1));
                 }
             }
         }
     }
 
-    println!("{}", dp[&(0, 0)]);
+    let path = dijkstra(&graph, 0, index(n - 1, n - 1, n)).unwrap();
+    println!("{}", path);
 }
 
 fn add_coord((x, y): (usize, usize), (dx, dy): (usize, usize)) -> (usize, usize) {
@@ -93,4 +80,37 @@ fn neighbors((x, y): (usize, usize), n: usize) -> Vec<(usize, usize)> {
             }
         })
         .collect();
+}
+
+fn index(x: usize, y: usize, n: usize) -> usize {
+    x * n + y
+}
+
+fn dijkstra(graph: &Graph, start: usize, end: usize) -> Option<usize> {
+    let n = graph.len();
+    let mut dist = vec![usize::MAX; n];
+    let mut heap = collections::BinaryHeap::new();
+
+    dist[start] = 0;
+    heap.push(cmp::Reverse((0, start)));
+
+    while let Some(cmp::Reverse((cost, node))) = heap.pop() {
+        if node == end {
+            return Some(cost);
+        }
+
+        if cost > dist[node] {
+            continue;
+        }
+
+        for &(neighbor, weight) in &graph[node] {
+            let next_cost = cost + weight;
+            if next_cost < dist[neighbor] {
+                dist[neighbor] = next_cost;
+                heap.push(cmp::Reverse((next_cost, neighbor)));
+            }
+        }
+    }
+
+    None
 }
