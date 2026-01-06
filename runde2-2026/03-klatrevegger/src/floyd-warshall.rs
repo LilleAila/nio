@@ -1,3 +1,9 @@
+// Solution using a modified floyd-warshall algorithm with max instead of +
+// I don't know if the following is correct but
+// Time: O(n^3)
+// Space: O(n^2)
+// Both are too much :(
+
 use std::convert::TryInto; // 2021 edition compatibility (try_into) - it seems nio uses 2015
 use std::io;
 
@@ -17,7 +23,7 @@ fn main() {
         .try_into()
         .unwrap();
 
-    let mut graph: Graph = vec![Vec::new(); n];
+    let mut graph: Graph = vec![Vec::new(); n as usize];
 
     for _ in 0..k {
         let [a, b, f]: [usize; 3] = lines
@@ -34,39 +40,32 @@ fn main() {
         graph[b].push((a, f as i32));
     }
 
-    let mut min: i32 = 0;
-    let mut max: i32 = *graph
-        .iter()
-        .flat_map(|xs| xs.iter().map(|(_, w)| w).max())
-        .max()
-        .unwrap();
+    let mut dp: Vec<Vec<i32>> = vec![vec![i32::MAX; n]; n];
 
-    let mut result: i32 = -1;
-
-    while min <= max {
-        let mid = (min + max) / 2;
-
-        let mut visited = vec![false; n];
-        let mut stack = vec![0];
-        visited[0] = true;
-
-        // DFS to check if the graph is still connected with the limited edge weight
-        while let Some(x) = stack.pop() {
-            for &(n, w) in &graph[x] {
-                if !visited[n] && w <= mid {
-                    visited[n] = true;
-                    stack.push(n);
-                }
-            }
-        }
-
-        if visited.iter().all(|&x| x) {
-            result = mid;
-            max = mid - 1;
-        } else {
-            min = mid + 1;
+    for u in 0..n {
+        dp[u][u] = 0;
+        for &(v, w) in &graph[u] {
+            dp[u][v] = w;
+            dp[v][u] = w;
         }
     }
 
-    println!("{}", result);
+    for k in 0..n {
+        for i in 0..n {
+            for j in 0..n {
+                let through_k = dp[i][k].max(dp[k][j]);
+                if through_k < dp[i][j] {
+                    dp[i][j] = through_k;
+                }
+            }
+        }
+    }
+
+    let max: i32 = *dp.iter().flat_map(|xs| xs.iter().max()).max().unwrap();
+
+    if max == i32::MAX {
+        println!("-1");
+    } else {
+        println!("{}", max);
+    }
 }
