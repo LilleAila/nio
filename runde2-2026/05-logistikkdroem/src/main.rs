@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::convert::TryInto;
 use std::io;
 
@@ -37,13 +37,14 @@ fn main() {
     let directions: [(usize, usize); 5] =
         [(0, 0), (0, 1), (0, usize::MAX), (1, 0), (usize::MAX, 0)];
 
-    let mut dp: Vec<Vec<usize>> = vec![vec![usize::MAX; n]; n];
-    dp[n - 1][n - 1] = 0;
+    let mut dp: HashMap<(usize, usize), usize> = HashMap::new();
+    dp.insert((n - 1, n - 1), 0);
 
     let mut stack: VecDeque<(usize, usize)> = VecDeque::new();
     stack.push_back((n - 1, n - 1));
 
     while let Some((x, y)) = stack.pop_front() {
+        let current_cost = dp[&(x, y)];
         for (nx, ny) in neighbors((x, y), n) {
             // Find the number of changes required to go from each neighbor
             let direction = directions[grid[nx][ny]];
@@ -52,10 +53,11 @@ fn main() {
             } else {
                 1
             };
+            let next_cost = current_cost + cost;
 
             // Add the this square to the stack if a better path was found
-            if dp[nx][ny] > dp[x][y] + cost {
-                dp[nx][ny] = dp[x][y] + cost;
+            if dp.get(&(nx, ny)).map_or(true, |&c| next_cost < c) {
+                dp.insert((nx, ny), next_cost);
 
                 if cost == 0 {
                     stack.push_front((nx, ny));
@@ -66,7 +68,7 @@ fn main() {
         }
     }
 
-    println!("{}", dp[0][0]);
+    println!("{}", dp[&(0, 0)]);
 }
 
 fn add_coord((x, y): (usize, usize), (dx, dy): (usize, usize)) -> (usize, usize) {
