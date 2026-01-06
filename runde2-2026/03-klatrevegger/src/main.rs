@@ -1,3 +1,8 @@
+// Binary search which removes all edges lower than the selected value, then checks if the graph is
+// still fully connected. This should be much faster than the others. Something like
+// Time: DFS * binary search = O((V + E) logN)) which is much faster than the others at O(n^3)
+// Space: O(V)
+
 use std::convert::TryInto; // 2021 edition compatibility (try_into) - it seems nio uses 2015
 use std::io;
 
