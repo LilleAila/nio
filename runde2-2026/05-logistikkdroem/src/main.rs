@@ -51,19 +51,11 @@ fn main() {
 
         // if let Some(&n) = paths.get(&t) {
         //     t = n;
-        //     paths.insert(c, n);
-        //     paths_b.insert(n, c);
         // }
         // if let Some(&n) = paths_b.get(&c) {
+        //     paths.insert(n, t);
         //     paths_b.remove(&c);
         //     paths_b.insert(t, n);
-        //     paths_b.insert(t, c);
-        //     paths.remove(&n);
-        //     paths.insert(n, t);
-        //     paths.insert(c, t);
-        // } else {
-        //     paths.insert(c, t);
-        //     paths_b.insert(t, c);
         // }
 
         paths.insert(c, t);
