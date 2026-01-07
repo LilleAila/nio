@@ -109,7 +109,7 @@ def main():
             else:
                 print("invalid command:", *cmd)
 
-        performance = used_fuel_this_round / (n * x) - 1
+        performance = 1 if n * x == 0 else used_fuel_this_round / (n * x) - 1
         print(
             f"Round {i + 1}: used={used_fuel_this_round}, needed={n * x}, this amounts to {performance * 100:.5f} percent more fuel than needed."
         )
