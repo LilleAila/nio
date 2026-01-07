@@ -29,7 +29,6 @@ fn main() {
         .try_into()
         .unwrap();
 
-    // Turn individual belts into a map of full paths
     let mut paths: HashMap<(usize, usize), (usize, usize)> = HashMap::new();
     // Inverse path map to speed up lookup
     // let mut paths_b: HashMap<(usize, usize), (usize, usize)> = HashMap::new();
@@ -110,8 +109,8 @@ fn main() {
             graph[i1].push((i2, cost));
         }
     }
-    let heuristic: &dyn Fn(usize, usize) -> usize =
-        &|a: usize, b: usize| manhattan_distance(nodes[a], nodes[b]);
+    // let heuristic: &dyn Fn(usize, usize) -> usize =
+    //     &|a: usize, b: usize| manhattan_distance(nodes[a], nodes[b]);
     // let path = a_star(&graph, 0, n_nodes - 1, heuristic).unwrap();
     let path = dijkstra(&graph, 0, n_nodes - 1).unwrap();
     println!("{}", path);
