@@ -30,8 +30,6 @@ fn main() {
         .unwrap();
 
     let mut paths: HashMap<(usize, usize), (usize, usize)> = HashMap::new();
-    // Inverse path map to speed up lookup
-    // let mut paths_b: HashMap<(usize, usize), (usize, usize)> = HashMap::new();
 
     for _ in 0..k {
         let l = lines.next().unwrap().unwrap();
@@ -49,17 +47,7 @@ fn main() {
         };
         let mut t = add_coord(c, d);
 
-        // if let Some(&n) = paths.get(&t) {
-        //     t = n;
-        // }
-        // if let Some(&n) = paths_b.get(&c) {
-        //     paths.insert(n, t);
-        //     paths_b.remove(&c);
-        //     paths_b.insert(t, n);
-        // }
-
         paths.insert(c, t);
-        // paths_b.insert(t, c);
     }
 
     // let mut nodes = vec![(0, 0), (n - 1, n - 1)];
