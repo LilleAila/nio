@@ -45,8 +45,7 @@ fn main() {
             "v" => (-1, 0),
             _ => panic!(),
         };
-        let mut t = add_coord(c, d);
-
+        let t = add_coord(c, d);
         paths.insert(c, t);
     }
 
