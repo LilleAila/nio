@@ -81,5 +81,5 @@ fn main() {
 }
 
 fn manhattan_distance((x1, y1): (usize, usize), (x2, y2): (usize, usize)) -> usize {
-    (x2 as i32 - x1 as i32).abs() as usize + (y2 as i32 - y1 as i32).abs() as usize
+    x1.abs_diff(x2) + y1.abs_diff(y2)
 }
