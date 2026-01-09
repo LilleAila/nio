@@ -30,11 +30,24 @@ fn main() {
         l.next();
         belts.push((x - 1, y - 1));
     }
-    belts.sort_unstable();
+    belts.sort_by_key(|&(x, y)| (y, x));
 
-    let mut dp = vec![[u16::MAX; 2]; belts.len()];
+    // let mut d_best: i32 = 0;
+    // let mut result = 2 * (n as i32 - 1);
+    // for &(x, y) in &belts {
+    //     let d_skip = manhattan_distance(start, (x, y)) as i32;
+    //     let d_use = d_skip + d_best - 1;
+    //     let d = d_skip.min(d_use);
+    //     let rest = manhattan_distance((x as usize, y as usize), end) as i32;
+    //     result = result.min(d + rest);
+    //     d_best = d_best.min(d - d_skip)
+    // }
+    // println!("{}", result);
+
     let start: (usize, usize) = (0, 0);
     let end: (usize, usize) = (n - 1, n - 1);
+
+    let mut dp = vec![[u16::MAX; 2]; belts.len()];
 
     for i in 0..k {
         let d = manhattan_distance(start, belts[i]) as u16;
@@ -46,9 +59,6 @@ fn main() {
         for j in 0..i {
             let ba = belts[i];
             let bb = belts[j];
-            if ba.1 < bb.1 {
-                continue;
-            }
             let d = manhattan_distance(bb, ba) as u16;
             for used in 0..=1 {
                 let c = dp[j][used];
