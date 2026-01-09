@@ -32,18 +32,6 @@ fn main() {
     }
     belts.sort_by_key(|&(x, y)| (y, x));
 
-    // let mut d_best: i32 = 0;
-    // let mut result = 2 * (n as i32 - 1);
-    // for &(x, y) in &belts {
-    //     let d_skip = manhattan_distance(start, (x, y)) as i32;
-    //     let d_use = d_skip + d_best - 1;
-    //     let d = d_skip.min(d_use);
-    //     let rest = manhattan_distance((x as usize, y as usize), end) as i32;
-    //     result = result.min(d + rest);
-    //     d_best = d_best.min(d - d_skip)
-    // }
-    // println!("{}", result);
-
     let start: (usize, usize) = (0, 0);
     let end: (usize, usize) = (n - 1, n - 1);
 
