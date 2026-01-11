@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::convert::TryInto;
 use std::io;
 
@@ -25,30 +26,4 @@ fn main() {
         l.next();
         belts[x][y] = true;
     }
-
-    // Traverse the grid one row at a time.
-    // We will not need to access the previous results.
-    // As such, it is only required to store the last DP instead of everything.
-    let mut dp0: Vec<usize> = vec![usize::MAX; n + 2];
-    let mut dp1: Vec<usize> = vec![usize::MAX; n + 2];
-    dp0[1] = 0;
-
-    for y in 1..=n {
-        for x in 2..=n {
-            dp0[x] = dp0[x].min(dp0[x - 1] + 1);
-        }
-        for x in (1..n).rev() {
-            dp0[x] = dp0[x].min(dp0[x + 1] + 1);
-        }
-
-        if y < n {
-            for x in 1..=n {
-                dp1[x] = dp0[x] + if belts[x][y] { 0 } else { 1 };
-            }
-
-            std::mem::swap(&mut dp0, &mut dp1);
-        }
-    }
-
-    println!("{}", dp0[n]);
 }
