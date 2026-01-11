@@ -1,8 +1,3 @@
-// Solution specifically for subtask 5 (all belts point upwards)
-// This uses a DP over the belts, indexed by the belt index and whether or not it has been used
-// This is now only proportional to k^2 and not to n^2 as the previous onees
-// While also having a smaller space complexity of just O(k)
-
 use std::convert::TryInto;
 use std::io;
 
@@ -20,7 +15,7 @@ fn main() {
         .try_into()
         .unwrap();
 
-    let mut belts: Vec<(usize, usize)> = Vec::new();
+    let mut belts: Vec<Vec<bool>> = vec![vec![false; n + 2]; n + 2];
 
     for _ in 0..k {
         let l = lines.next().unwrap().unwrap();
@@ -28,46 +23,32 @@ fn main() {
         let x: usize = l.next().unwrap().parse().unwrap();
         let y: usize = l.next().unwrap().parse().unwrap();
         l.next();
-        belts.push((x - 1, y - 1));
-    }
-    belts.sort_by_key(|&(x, y)| (y, x));
-
-    let start: (usize, usize) = (0, 0);
-    let end: (usize, usize) = (n - 1, n - 1);
-
-    let mut dp = vec![[u16::MAX; 2]; belts.len()];
-
-    for i in 0..k {
-        let d = manhattan_distance(start, belts[i]) as u16;
-        dp[i][0] = d;
-        dp[i][1] = d.saturating_sub(1);
+        belts[x][y] = true;
     }
 
-    for i in 0..k {
-        for j in 0..i {
-            let ba = belts[i];
-            let bb = belts[j];
-            let d = manhattan_distance(bb, ba) as u16;
-            for used in 0..=1 {
-                let c = dp[j][used];
-                if c == u16::MAX {
-                    continue;
-                }
-                dp[i][0] = dp[i][0].min(c + d);
-                dp[i][1] = dp[i][1].min(c + d - 1);
+    // Traverse the grid one row at a time.
+    // We will not need to access the previous results.
+    // As such, it is only required to store the last DP instead of everything.
+    let mut dp0: Vec<usize> = vec![usize::MAX; n + 2];
+    let mut dp1: Vec<usize> = vec![usize::MAX; n + 2];
+    dp0[1] = 0;
+
+    for y in 1..=n {
+        for x in 2..=n {
+            dp0[x] = dp0[x].min(dp0[x - 1] + 1);
+        }
+        for x in (1..n).rev() {
+            dp0[x] = dp0[x].min(dp0[x + 1] + 1);
+        }
+
+        if y < n {
+            for x in 1..=n {
+                dp1[x] = dp0[x] + if belts[x][y] { 0 } else { 1 };
             }
+
+            std::mem::swap(&mut dp0, &mut dp1);
         }
     }
 
-    let mut result = 2 * (n - 1) as u16;
-    for i in 0..k {
-        let rest = manhattan_distance(belts[i], end) as u16;
-        result = result.min(dp[i][0] + rest).min(dp[i][1] + rest);
-    }
-
-    println!("{}", result);
-}
-
-fn manhattan_distance((x1, y1): (usize, usize), (x2, y2): (usize, usize)) -> usize {
-    x1.abs_diff(x2) + y1.abs_diff(y2)
+    println!("{}", dp0[n]);
 }
