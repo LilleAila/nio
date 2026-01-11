@@ -5,16 +5,6 @@ use std::io::{self, Lines, StdinLock, Write};
 fn main() {
     let mut lines = io::stdin().lines();
 
-    // Based on the optimal solution from 2024/25 finale
-    // https://nio.no/oppgaver/2024-2025/NIO2025-finale-fasit.pdf
-    // This gives different threshold values to use based on n
-    // idk if this even works
-    let mut e: Vec<f64> = vec![0.0; 1001];
-    e[1] = 0.5;
-    for i in 2..=1000 {
-        e[i] = (1.0 + e[i - 1] * e[i - 1]) / 2.0;
-    }
-
     let r: i32 = lines.next().unwrap().unwrap().trim().parse().unwrap();
 
     for _ in 0..r {
@@ -31,11 +21,15 @@ fn main() {
 
         let mut n = n as usize;
 
+        let mut success = false;
+        let mut k = a + (b - a) / 3;
         while n > 0 {
-            let d = (b - a) as f64;
-            let k = ((a as f64 + d * e[n]).floor() as i32).max(a).min(b);
+            if !success {
+                k = a + (b - a) / 3;
+            }
             if send(k, &mut lines) {
                 b = k;
+                success = truer
                 n -= 1;
             } else {
                 a = k + 1;
