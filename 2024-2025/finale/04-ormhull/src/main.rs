@@ -1,9 +1,9 @@
-use std::cmp;
+use std::cmp::{self, Reverse};
 use std::collections::BinaryHeap;
 use std::convert::TryInto;
 use std::io;
 
-type Graph = Vec<Vec<(usize, usize, bool)>>;
+type Graph = Vec<Vec<(usize, usize)>>;
 
 fn main() {
     let mut lines = io::stdin().lines();
@@ -31,53 +31,94 @@ fn main() {
             .try_into()
             .unwrap();
 
-        graph[v].push((u, t, false));
-        graph[u].push((v, t, false));
+        graph[v].push((u, t));
+        graph[u].push((v, t));
     }
 
-    let wormholes: Vec<usize> = lines
+    let mut wormhole: Vec<bool> = vec![false; n];
+    for i in lines
         .next()
         .unwrap()
         .unwrap()
         .split_whitespace()
-        .map(|x| x.parse().unwrap())
-        .collect();
-
-    for &a in &wormholes {
-        for &b in &wormholes {
-            graph[a].push((b, 0, true));
-        }
+        .map(|x| x.parse::<usize>().unwrap())
+    {
+        wormhole[i] = true;
     }
 
-    let length = dijkstra(&graph, a, b);
-    println!("{:?}", length);
-}
+    let mut db: Vec<usize> = vec![usize::MAX; n];
+    let mut heap: BinaryHeap<Reverse<(usize, usize)>> = BinaryHeap::new();
+    db[b] = 0;
+    heap.push(Reverse((0, b)));
 
-fn dijkstra(graph: &Graph, start: usize, end: usize) -> Option<usize> {
-    let n = graph.len();
-    let mut dist = vec![usize::MAX; n];
-    let mut heap = BinaryHeap::new();
-
-    dist[start] = 0;
-    heap.push(cmp::Reverse((0, start)));
-
-    while let Some(cmp::Reverse((cost, node))) = heap.pop() {
-        if node == end {
-            return Some(cost);
-        }
-
-        if cost > dist[node] {
+    while let Some(Reverse((d, u))) = heap.pop() {
+        if d > db[u] {
             continue;
         }
-
-        for &(neighbor, weight, _wormhole) in &graph[node] {
-            let next_cost = cost + weight;
-            if next_cost < dist[neighbor] {
-                dist[neighbor] = next_cost;
-                heap.push(cmp::Reverse((next_cost, neighbor)));
+        for &(v, w) in &graph[u] {
+            if wormhole[v] {
+                continue;
+            }
+            let nd = d + w;
+            if nd < db[v] {
+                db[v] = nd;
+                heap.push(cmp::Reverse((nd, v)));
             }
         }
     }
 
-    None
+    let mut x = usize::MAX;
+    for u in 0..n {
+        if !wormhole[u] {
+            continue;
+        }
+
+        for &(v, w) in &graph[u] {
+            if !wormhole[v] && db[v] < usize::MAX {
+                x = x.min(w + db[v]);
+            }
+        }
+    }
+
+    if x == usize::MAX {
+        println!("-1");
+        return;
+    }
+
+    let mut dist: Vec<usize> = vec![usize::MAX; n];
+    let mut heap: BinaryHeap<Reverse<(usize, usize)>> = BinaryHeap::new();
+    dist[a] = 0;
+    heap.push(Reverse((0, a)));
+
+    while let Some(Reverse((d, u))) = heap.pop() {
+        if d > dist[u] {
+            continue;
+        }
+        if u == b {
+            break;
+        }
+        for &(v, w) in &graph[u] {
+            if wormhole[v] {
+                let nd = d + w + x;
+                for wh in 0..n {
+                    if wormhole[wh] && nd < dist[wh] {
+                        dist[wh] = nd;
+                        heap.push(Reverse((nd, wh)));
+                    }
+                }
+            } else {
+                let nd = d + w;
+                if nd < dist[v] {
+                    dist[v] = nd;
+                    heap.push(cmp::Reverse((nd, v)));
+                }
+            }
+        }
+    }
+
+    if dist[b] == usize::MAX {
+        println!("-1");
+        return;
+    }
+    println!("{:.15}", dist[b]);
 }
