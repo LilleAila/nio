@@ -30,6 +30,7 @@ fn main() {
             .try_into()
             .unwrap();
         graph[a].push((b, k));
+        graph[b].push((a, k));
     }
 
     let start = 0;
