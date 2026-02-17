@@ -28,34 +28,24 @@ fn main() {
         photos.push(photo);
     }
 
-    let mut permutations = vec![vec![photos[0].clone()]];
-    for i in 1..k {
-        let photo = &photos[i];
-        permutations = permutations
-            .iter()
-            .flat_map(|p| {
-                let mut a = p.clone();
-                a.push(photo.clone());
-
-                let mut b = p.clone();
-                let mut photo_reversed = photo.clone();
-                photo_reversed.reverse();
-                b.push(photo_reversed);
-
-                vec![a, b]
-            })
-            .collect();
-    }
-
     let mut d = 0;
     let mut a = 0;
     let mut b = 0;
 
-    for ps in &permutations {
+    for m in (1 << 1)..(1 << k) {
         let mut indexes = vec![0; n];
-        for p in ps {
-            for i in 0..n {
-                indexes[p[i]] += i;
+
+        for i in 0..k {
+            let photo = if m & (1 << i) != 0 {
+                let mut p = photos[i].clone();
+                p.reverse();
+                p
+            } else {
+                photos[i].clone()
+            };
+
+            for (i, &person) in photo.iter().enumerate() {
+                indexes[person] += i;
             }
         }
 
@@ -77,9 +67,9 @@ fn main() {
         }
     }
 
-    println!(
-        "{} {}",
-        if a > b { b } else { a },
-        if a > b { a } else { b }
-    );
+    if a > b {
+        println!("{} {}", b, a);
+    } else {
+        println!("{} {}", a, b);
+    }
 }
