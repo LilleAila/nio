@@ -1,5 +1,28 @@
 # NIO
 
+## Running the code
+
+This replicates excactly how it is run on the competition server, however LSP support is limited / non existant when working on standalone rust files outside of a cargo project.
+
+```sh
+rustc -O -o main main.rs && ./main < examples/1.txt
+```
+
+One could do this instead, which makes it easier to develop locally, with the limitation that if you are working on multiple versions of the code in different files, the LSP only works in the main file and is disabled in the others as this is not how cargo is really supposed to be used. Could be fixed with a wrapper or utility script or something maybe?
+
+```sh
+cargo run < examples/1.txt
+```
+
+Note that this will also require this in the `Cargo.toml` such that it complies with the same rules used by the version on the server:
+
+```toml
+[package]
+edition = "2015"
+```
+
+Most notably, this applies to the `try_into`-function which has to be imported in the `2015`-version of rust.
+
 ## Oversikt over poeng på oppgavene
 
 | Points (/100) | Name                          | Done in competition |
