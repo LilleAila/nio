@@ -4,13 +4,19 @@ mkShell {
     nixfmt-rfc-style
     nixd
     statix
+
     rustc
     cargo
     rustfmt
     rust-analyzer
+
     black
     pyright
     ruff
     python3
+
+    typst
+    tinymist
+    typstyle
   ];
 }
