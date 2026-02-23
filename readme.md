@@ -31,6 +31,7 @@ Most notably, this applies to the `try_into`-function which has to be imported i
 | 0             | `nio18-finale-klassebilde`    |                     |
 | 100           | `nio21-finale-togtur`         |                     |
 | 100           | `nio22-finale-brusskap`       |                     |
+| 100           | `nio23-runde2-lynnedslag`     |                     |
 | 100           | `nio23-runde2-bananbonanza`   |                     |
 | 80            | `nio23-finale-ekornfare`      |                     |
 | 15            | `nio25-runde2-oyberedskap`    |                     |

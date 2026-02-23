@@ -254,6 +254,59 @@ for &(n, c) in &graph[node] {
 
 === Trees (TODO)
 
+=== Difference arrays
+
+Difference arrays provide a more efficient way to update all values within an interval. Instead of looping over all items in the interval $[a, b]$, one instead just sets the values at $a$ and $b$, then passes over the array afterwards. A boolean implementation could look like this (taken from my solution to `nio23-runde2-lynnedslag`):
+
+```rs
+let mut houses: Vec<bool> = vec![false; n];
+
+for _ in k {
+  let [a, b]: [usize; 2];
+  houses[a] = !houses[a];
+  houses[b+1] = !houses[b+1];
+}
+
+let mut flip = false;
+let mut result = 0;
+
+for h in houses {
+  flip ^= h;
+
+  if !flip {
+    result += 1;
+  }
+}
+```
+
+#note[
+  We use $b+1$ instead of $b$ because the interval is inclusive. The difference array marks where the effect starts and stops, and the prefix accumulation applies the effect from $a$ through $b$.
+]
+
+A more general implementation could look like this:
+
+```rs
+let mut xs: Vec<isize> = vec![0; 10 + 1];
+
+// Add 3 to the interval [2, 5]
+xs[2] += 3;
+xs[5+1] -= 3;
+
+// Subtract 9 in the interval [6, 9]
+xs[6] -= 9;
+xs[9+1] += 9;
+
+let mut d = 0;
+let mut result = 0;
+
+for x in xs {
+  d += x;
+  result += d;
+}
+```
+
+Note that the previous version is actually a special case of this, in which one would use `+= x % 2` (which I have simplified to using booleans).
+
 == Algorithms
 
 === Binary search (TODO)
