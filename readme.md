@@ -25,25 +25,26 @@ Most notably, this applies to the `try_into`-function which has to be imported i
 
 ## Oversikt over poeng på oppgavene
 
-| Points (/100) | Name                          | Done in competition |
-| ------------- | ----------------------------- | ------------------- |
-| 0             | `nio16-finale-reven`          |                     |
-| 0             | `nio18-finale-klassebilde`    |                     |
-| 100           | `nio21-finale-togtur`         |                     |
-| 100           | `nio22-finale-brusskap`       |                     |
-| 100           | `nio23-runde2-lynnedslag`     |                     |
-| 100           | `nio23-runde2-bananbonanza`   |                     |
-| 80            | `nio23-finale-ekornfare`      |                     |
-| 15            | `nio25-runde2-oyberedskap`    |                     |
-| 100           | `nio25-finale-papirfly`       |                     |
-| 100           | `nio25-finale-runddans`       |                     |
-| 0             | `nio25-finale-ormhull`        |                     |
-| 100           | `nio25-finale-belysning`      |                     |
-| 41            | `nio26-runde2-logistikkdroem` | x                   |
-| 85            | `nio26-runde2-romfart`        | x                   |
-| 100           | `nio26-runde2-klatrevegger`   | x                   |
-| 100           | `nio26-runde2-tradisjonsmat`  | x                   |
-| 100           | `nio26-runde2-tannhelse`      | x                   |
+| Points (/100) | Name                              | Done in competition |
+| ------------- | --------------------------------- | ------------------- |
+| 0             | `nio16-finale-reven`              |                     |
+| 0             | `nio18-finale-klassebilde`        |                     |
+| 100           | `nio21-finale-togtur`             |                     |
+| 100           | `nio22-finale-brusskap`           |                     |
+| 100           | `nio23-runde2-lynnedslag`         |                     |
+| 100           | `nio23-runde2-bananbonanza`       |                     |
+| 27            | `nio23-runde2-personlighetstyper` |                     |
+| 80            | `nio23-finale-ekornfare`          |                     |
+| 15            | `nio25-runde2-oyberedskap`        |                     |
+| 100           | `nio25-finale-papirfly`           |                     |
+| 100           | `nio25-finale-runddans`           |                     |
+| 0             | `nio25-finale-ormhull`            |                     |
+| 100           | `nio25-finale-belysning`          |                     |
+| 41            | `nio26-runde2-logistikkdroem`     | x                   |
+| 85            | `nio26-runde2-romfart`            | x                   |
+| 100           | `nio26-runde2-klatrevegger`       | x                   |
+| 100           | `nio26-runde2-tradisjonsmat`      | x                   |
+| 100           | `nio26-runde2-tannhelse`          | x                   |
 
 ## Deltakelser i rundene
 

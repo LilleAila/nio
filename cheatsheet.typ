@@ -121,6 +121,8 @@ set.remove(&6);
 
 === Hash Maps (TODO)
 
+=== Bitmasks and bitwise operations (TODO)
+
 === Time complexity
 
 Depending on the constraints in the problem, different algorithms should be chosen, approximately based on this:
