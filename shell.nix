@@ -18,5 +18,10 @@ mkShell {
     typst
     tinymist
     typstyle
+
+    gcc
+    clang-tools
+
+    prettierd
   ];
 }

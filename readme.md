@@ -29,6 +29,7 @@ Most notably, this applies to the `try_into`-function which has to be imported i
 | ------------- | --------------------------------- | ------------------- |
 | 0             | `nio16-finale-reven`              |                     |
 | 0             | `nio18-finale-klassebilde`        |                     |
+| 0             | `nio21-runde2-tetris`             |                     |
 | 100           | `nio21-finale-togtur`             |                     |
 | 100           | `nio22-finale-brusskap`           |                     |
 | 100           | `nio23-runde2-lynnedslag`         |                     |
@@ -36,7 +37,10 @@ Most notably, this applies to the `try_into`-function which has to be imported i
 | 27            | `nio23-runde2-personlighetstyper` |                     |
 | 0             | `nio23-runde2-nettverkssikkerhet` |                     |
 | 80            | `nio23-finale-ekornfare`          |                     |
+| 100           | `nio25-runde2-byggeklosser`       |                     |
 | 15            | `nio25-runde2-oyberedskap`        |                     |
+| 16            | `nio25-runde2-tennis`             |                     |
+| 0             | `nio25-runde2-utjevning`          |                     |
 | 100           | `nio25-finale-papirfly`           |                     |
 | 100           | `nio25-finale-runddans`           |                     |
 | 0             | `nio25-finale-ormhull`            |                     |

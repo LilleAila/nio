@@ -64,6 +64,12 @@ fn main() {
 }
 ```
 
+The program can then be compiled and run with
+
+```sh
+rustc -O -o main main.rs && ./main < 1.txt
+```
+
 === Capturing input
 
 We will use the stdin lines iterator defined above to read the input:
@@ -88,6 +94,15 @@ let [n, q]: [usize; 2] = lines
 ```
 
 , which is expandable to any number of values in the same line.
+
+#note[
+  This is unoptimal as it allocates a `Vec` when it is not necessary, but in my experience this was negligible. It can however be improved as such:
+  ```rs
+  let mut line = lines.next().unwrap().unwrap().split_whitespace();
+  let n: usize = iter.next().unwrap().parse().unwrap();
+  let q: usize = iter.next().unwrap().parse().unwrap();
+  ```
+]
 
 === Enums
 
@@ -123,6 +138,18 @@ set.remove(&6);
 
 === Bitmasks and bitwise operations (TODO)
 
+#table(
+  columns: 2,
+  inset: 6pt,
+  [*Operator*], [*Operation*],
+  [`&`], [AND],
+  [`|`], [OR],
+  [`^`], [XOR],
+  [`!`], [NOT],
+  [`<<`], [Left shift],
+  [`>>`], [Right shift],
+)
+
 === Time complexity
 
 Depending on the constraints in the problem, different algorithms should be chosen, approximately based on this:
@@ -130,7 +157,7 @@ Depending on the constraints in the problem, different algorithms should be chos
 #table(
   columns: 2,
   inset: 6pt,
-  [n], [Time complexity],
+  [*n*], [*Time complexity*],
   [1 000 000], [$O (n)$],
   [400 000], [$O (n log n)$],
   [1 000], [$O (n^2)$],
@@ -154,6 +181,13 @@ Which will be indexed like this:
 ```
 graph[from_node] = [(neighbor1, cost), (neigbor2, cost), (neighbor3, cost)]
 ```
+
+#note[
+  Unweighted graphs can be simplified to
+  ```rs
+  type Graph = Vec<Vec<usize>>;
+  ```
+]
 
 Here is an example of how a graph can be constructed in rust (taken from my solution to `nio21-finale-togtur`). In this case I am creating an undirected graph. For a directed graph, one would remove the line with `graph[b].push((a, k))`.
 
