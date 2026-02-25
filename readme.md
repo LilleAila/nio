@@ -29,7 +29,7 @@ Most notably, this applies to the `try_into`-function which has to be imported i
 | ------------- | --------------------------------- | ------------------- |
 | 0             | `nio16-finale-reven`              |                     |
 | 0             | `nio18-finale-klassebilde`        |                     |
-| 0             | `nio21-runde2-tetris`             |                     |
+| 60            | `nio21-runde2-tetris`             |                     |
 | 100           | `nio21-finale-togtur`             |                     |
 | 100           | `nio22-finale-brusskap`           |                     |
 | 100           | `nio23-runde2-lynnedslag`         |                     |

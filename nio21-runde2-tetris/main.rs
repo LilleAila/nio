@@ -48,10 +48,10 @@ fn main() {
             game.push(p);
         } else {
             game[j] |= p;
+        }
 
-            if game[j] == (1 << v) - 1 {
-                game.remove(j);
-            }
+        if game[j] == (1 << v) - 1 {
+            game.remove(j);
         }
 
         println!("{}", game.len());
