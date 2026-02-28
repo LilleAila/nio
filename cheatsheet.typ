@@ -45,7 +45,7 @@
 
 #let note(body) = colorbox(title: "Note", color: "blue", body)
 
-#outline()
+#outline(depth: 3)
 
 = Introduction
 
@@ -104,6 +104,88 @@ let [n, q]: [usize; 2] = lines
   ```
 ]
 
+=== Bitmasks and bitwise operations (TODO)
+
+#table(
+  columns: 2,
+  inset: 6pt,
+  [*Operator*], [*Operation*],
+  [`&`], [AND],
+  [`|`], [OR],
+  [`^`], [XOR],
+  [`!`], [NOT],
+  [`<<`], [Left shift],
+  [`>>`], [Right shift],
+)
+
+=== Match
+
+Useful for pattern matching. Works similar to that of languages like haskell or python. It can contain expressions and also return values directly.
+
+```rs
+let bar = match foo {
+    Some(x) = x,
+    None = 0,
+}
+```
+
+```rs
+match foo {
+    Some(0) = {
+        println!("Value is zero :o");
+    },
+    Some(x) if x < 10 {
+        println!("X is less than 10");
+    },
+    Some(x) {
+        println!("Value: {}", x);
+    },
+    None = {
+        println!("No value :(");
+    }
+}
+```
+
+#note[
+  One can use the operator `@` to set a value while matching a pattern. For example, one can combine the pattern `x` and `1..=10` into a single expression with `x @ 1..=10`, which will keep the original value in `x` while matching it against the pattern.
+]
+
+=== Time complexity
+
+Depending on the constraints in the problem, different algorithms should be chosen, approximately based on this:
+
+#table(
+  columns: 2,
+  inset: 6pt,
+  [*n*], [*Time complexity*],
+  [1 000 000], [$O (n)$],
+  [400 000], [$O (n log n)$],
+  [1 000], [$O (n^2)$],
+  [200], [$O (n^3)$],
+  [20], [$O (2^n)$],
+  [10], [$O (n!)$],
+)
+
+== Useful data types
+
+=== Option
+
+An option holds an optional value, similar to the `Maybe`-monad in haskell:
+
+```rs
+let x: Option<i32> = None;
+let x: Option<i32> = Some(42);
+
+match x {
+  Some(n) => println!("value exists"),
+  None => println!("no value"),
+}
+
+let x: i32 = x.unwrap(); // unsafe; panics if None
+let x: i32 = x.unwrap_or(0); // safe; adds a fallback value
+let x: Option<i32> = x.map(|v| v * 2);
+```
+
 === Enums
 
 Can be defined with
@@ -116,7 +198,92 @@ enum Instruction {
 }
 ```
 
-=== Sets
+=== Vectors
+
+Vectors are lists of items with a dynamic length. Here are some examples:
+
+```rs
+let xs: Vec<i32> = vec![1, 2, 3, 4];
+let xs: Vec<i32> = vec![0; 5]; // [0, 0, 0, 0, 0]
+let mut xs: Vec<usize> = Vec::new(); // xs = vec![]
+xs.push(42); // xs = vec![42]
+xs.push(123); // xs = vec![42, 123]
+```
+
+==== VecDeque
+
+// FIXME: should maybe be moved down to the data structures and algorithms section?
+
+For algorithms such as 0-1 BFS, one can use a double-ended queue as follows:
+
+```rs
+use std::collections::VecDeque;
+
+let mut queue: VecDeque<usize> = VecDeque::new();
+
+while let Some(x) = queue.pop_front() {
+  if weights[x] == 0 {
+    for &n in &graph[x] {
+      queue.push_front(n);
+    }
+  } else {
+    for &n in &neighbors[x] {
+      queue.push_back(n);
+    }
+  }
+}
+```
+
+Note that this is just pseudocode.
+
+=== Slices
+
+A vector can be indexed with a slice as such:
+
+```rs
+let xs = vec![0, 1, 2, 3, 4];
+
+let slice = &xs[1..4]; // [1, 2, 3]
+let slice = &xs[1..=3]; // [1, 2, 3]
+let slice = &xs[..3]; // [0, 1, 2]
+let slice = &xs[2..]; // [2, 3, 4]
+let slice = &xs[..]; // [0, 1, 2, 3, 4]
+```
+
+Slices can also be mutable:
+
+```rs
+let xs = vec![0, 1, 2, 3, 4];
+
+for x in &mut xs[1..4] {
+  *x *= 2;
+}
+
+println!("{:?}", xs); // [0, 2, 4, 6, 4]
+```
+
+#note[
+  Slices borrow from the vector. `xs[1..4]` produces a slice of type `&[i32]`.
+]
+
+A slice can also be used as an iterator, in pattern matching, etc.
+
+```rs
+let xs = vec![0, 1, 2, 3, 4];
+
+match &xs[..] {
+    [first, .., last] => {
+        println!("First: {}, Last: {}", first, last);
+    }
+}
+
+// .iter() on a slice of type &[i32] creates an iterator of references (`&i32`)
+let slice_sum = xs[1..4].iter().sum(); // 6
+```
+
+=== Sets and maps
+
+==== HashSet
 
 Note that most set operations use borrows, with the exception of `insert`.
 
@@ -134,37 +301,87 @@ assert!(!set.contains(&7));
 set.remove(&6);
 ```
 
-=== Hash Maps (TODO)
+#note[
+  When doing a lookup, one uses a reference to the value, not the value itself (`set.contains(&5)`). The same applies to HashMaps.
+]
 
-=== Bitmasks and bitwise operations (TODO)
+=== HashMap
 
-#table(
-  columns: 2,
-  inset: 6pt,
-  [*Operator*], [*Operation*],
-  [`&`], [AND],
-  [`|`], [OR],
-  [`^`], [XOR],
-  [`!`], [NOT],
-  [`<<`], [Left shift],
-  [`>>`], [Right shift],
-)
+HashMaps store data in a map with hashed keys and have $O(1)$ operations.
 
-=== Time complexity
+```rs
+use std::collections::HashMap;
 
-Depending on the constraints in the problem, different algorithms should be chosen, approximately based on this:
+let mut map: HashMap<usize, &str> = HashMap::new();
+map.insert(1, "one");
+map.insert(2, "two");
 
-#table(
-  columns: 2,
-  inset: 6pt,
-  [*n*], [*Time complexity*],
-  [1 000 000], [$O (n)$],
-  [400 000], [$O (n log n)$],
-  [1 000], [$O (n^2)$],
-  [200], [$O (n^3)$],
-  [20], [$O (2^n)$],
-  [10], [$O (n!)$],
-)
+let x: Option<&str> = map.get(&1); // Some("one")
+let x: Option<&str> = map.get(&3); // None
+
+assert!(map.contains_key(&2));
+map.remove(&2);
+assert!(!map.contains_key(&2));
+
+map.insert(1, "en");
+```
+
+There is also more complex funcionality present, such as:
+
+```rs
+let mut map: HashMap<usize, i32> = HashMap::new();
+map.insert(1, 123);
+
+let x: &i32 = map[&1]; // unsafe; panics if 1 does not exist
+let x: Option<&i32> = map.get(&1); // safe
+
+let mut x: &mut i32 = map.entry(1); // .entry() returns an &mut i32
+let x: &i32 = map.entry(1).or_insert(456); // 123
+let x: &i32 = map.entry(2).or_insert(456); // 456
+
+*map.entry(3).or_insert(0) += 1; // map[&3] == 1
+*map.entry(3).or_insert(0) += 1; // map[&3] == 2
+
+map.entry(4).and_modify(|ref mut v| v += 1).or_insert(1); // map[&4] = 1
+map.entry(4).and_modify(|v| *v += 1).or_insert(1); // map[&4] = 2
+```
+
+=== BTreeSet and BTreeMap
+
+BTreeSet and BTreeMap work conceptually same as their Hash counterparts, with the addition that they are automatically sorted. The difference is that the Hash versions are (as the name suggests) hash-based with $O(1)$ operations, and the BTree versions have $O(log n)$ operations..
+
+#note[
+  These data types internally use a B-tree to sort the values, hence the name "B-Tree Set".
+]
+
+Here are some usage examples:
+
+```rs
+use std::collections::BTreeSet;
+
+let mut set = BTreeSet::new();
+set.insert(10);
+set.insert(5);
+set.insert(20);
+
+let left: Option<&i32> = set.range(..10).next_back();
+let right: Option<&i32> = set.range(10 + 1..).next();
+```
+
+If one needs to store data along with the sorted indexes, a BTreeMap is useful. It would also work to use a separate HashMap and BTreeSet, but combining it into a BTreeMap is more efficient and makes the code cleaner.
+
+```rs
+use std::collections::BTreeMap;
+
+let mut map = BTreeMap::new();
+map.insert(10, "root");
+map.insert(5, "left child");
+map.insert(20, "right child");
+
+let left_depth: Option<&&str> = map.range(..10).next_back().map(|(_, v)| v);
+// Optionally:
+let left_depth: Option<&str> = map.range(..10).next_back().map(|(_, v)| *v);
+```
 
 == Data structures
 
@@ -288,7 +505,112 @@ for &(n, c) in &graph[node] {
 
 === DP (TODO)
 
-=== Trees (TODO)
+=== Binary trees
+
+A binary tree can be defined with
+
+```rs
+#[derive(Debug)]
+struct Node<T> {
+    value: T,
+    left: Option<Box<Node<T>>>,
+    right: Option<Box<Node<T>>>,
+}
+
+impl<T> Node<T> {
+    fn new(value: T) -> Self {
+        Node {
+            value,
+            left: None,
+            right: None,
+        }
+    }
+}
+```
+
+Which can then be used like
+
+```rs
+let mut root = Node::new(10);
+
+root.left = Some(Box::new(Node::new(5)));
+root.right = Some(Box::new(Node::new(20)));
+
+dbg!(root);
+```
+
+Traversing it can be done either recursively or iteratively, as follows:
+
+```rs
+fn inorder<T: std::fmt::Display>(node: &Option<Box<Node<T>>>) {
+    if let Some(n) = node {
+        inorder(&n.left);
+        print!("{} ", n.value);
+        inorder(&n.right);
+    }
+}
+```
+
+Here is an example taken from my unoptimized solution to `nio24-finale-trebygger`:
+
+```rs
+let mut root: Node<usize> = Node::new(xs[0]);
+println!("0");
+
+for &a in &xs[1..] {
+    let mut h = 1;
+    let mut c = &mut root;
+
+    loop {
+        if a < c.value {
+            match c.left {
+                Some(ref mut l) => {
+                    c = l;
+                }
+                None => {
+                    c.left = Some(Box::new(Node::new(a)));
+                    println!("{}", h);
+                    break;
+                }
+            }
+        } else {
+            match c.right {
+                Some(ref mut r) => {
+                    c = r;
+                }
+                None => {
+                    c.right = Some(Box::new(Node::new(a)));
+                    println!("{}", h);
+                    break;
+                }
+            }
+        }
+
+        h += 1;
+    }
+}
+```
+
+#note[
+  One usually will not need to implement a tree in CP - most of the time it will suffice to use a `BTreeSet` or `BTreeMap`. The solution listed above exists as an example of how one _could_ use this data structure, but in this and most other cases it will be better to use one of the aforementioned data types. The above solution could be significantly optimized to this:
+
+  ```rs
+  let mut tree: BTreeMap<usize, usize> = BTreeMap::new();
+
+  tree.insert(xs[0], 0);
+  println!("0");
+
+  for &x in &xs[1..] {
+      let l = tree.range(..x).next_back().map(|(_, &d)| d);
+      let r = tree.range(x + 1..).next().map(|(_, &d)| d);
+
+      let d = l.unwrap_or(0).max(r.unwrap_or(0)) + 1;
+      tree.insert(x, d);
+
+      println!("{}", d);
+  }
+  ```
+]
 
 === Difference arrays
 
