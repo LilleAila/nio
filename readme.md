@@ -38,6 +38,7 @@ Most notably, this applies to the `try_into`-function which has to be imported i
 | 0             | `nio23-runde2-nettverkssikkerhet` |                     |
 | 80            | `nio23-finale-ekornfare`          |                     |
 | 100           | `nio24-finale-sokkeskuff`         |                     |
+| 100           | `nio24-finale-regnbuelakris`      |                     |
 | 100           | `nio24-finale-trebygger`          |                     |
 | 100           | `nio25-runde2-byggeklosser`       |                     |
 | 15            | `nio25-runde2-oyberedskap`        |                     |

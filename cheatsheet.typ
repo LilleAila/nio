@@ -104,6 +104,37 @@ let [n, q]: [usize; 2] = lines
   ```
 ]
 
+==== Reading a list of values
+
+If the input is a single line split into values, it can be read as such:
+
+```rs
+let xs: Vec<usize> = lines.next().unwrap().unwrap()..split_whitespace().map(|x| x.parse().unwrap()).collect();
+```
+
+And if the input is given with each value on a separate line, it can be read with either of the following:
+
+```rs
+let xs: Vec<usize> = (0..n).map(|_| lines.next().unwrap().unwrap().parse().unwrap()).collect();
+```
+
+```rs
+let mut xs: Vec<usize> = Vec::new();
+for _ in 0..n {
+  let x = lines.next().unwrap().unwrap().parse().unwrap();
+  xs.push(x);
+}
+```
+
+```rs
+let mut xs: Vec<usize> = vec![usize::MAX; n];
+for i in 0..n {
+  xs[i] = lines.next().unwrap().unwrap().parse().unwrap();
+}
+```
+
+I prefer the first of the three, but the others can be useful if the line contains more complex input.
+
 === Bitmasks and bitwise operations (TODO)
 
 #table(
@@ -198,6 +229,24 @@ if let Some(v) = x {
 // Equivalent to above, but might not work in the version of rust used by NIO
 if x.is_some_and(|v| v == 42) {}
 if let Some(v) = x && v == 42 {}
+```
+
+Here is an example, taken from my solution to `nio24-finale-sokkeskuff`:
+
+```rs
+let mut prev: Option<usize> = None;
+let mut pairs = 0;
+
+for &s in &socks {
+    if let Some(p) = prev {
+        if s - p <= t {
+            pairs += 1;
+            prev = None;
+            continue;
+        }
+    }
+    prev = Some(s);
+}
 ```
 
 === Enums
