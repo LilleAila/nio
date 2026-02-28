@@ -45,7 +45,7 @@
 
 #let note(body) = colorbox(title: "Note", color: "blue", body)
 
-#outline(depth: 3)
+#outline(depth: 4)
 
 = Introduction
 
@@ -184,6 +184,20 @@ match x {
 let x: i32 = x.unwrap(); // unsafe; panics if None
 let x: i32 = x.unwrap_or(0); // safe; adds a fallback value
 let x: Option<i32> = x.map(|v| v * 2);
+
+if let Some(a) = x {
+  println!("{}", a);
+}
+
+if let Some(v) = x {
+  if v == 42 {
+    println!("X is some and 42!")
+  }
+}
+
+// Equivalent to above, but might not work in the version of rust used by NIO
+if x.is_some_and(|v| v == 42) {}
+if let Some(v) = x && v == 42 {}
 ```
 
 === Enums
