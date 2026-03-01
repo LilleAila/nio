@@ -7,8 +7,8 @@ fn main() {
     let n: usize = lines.next().unwrap().unwrap().parse().unwrap();
 
     // NOTE: making everything 1-indexed to make DP easier
-    let mut calories: Vec<Vec<usize>> = vec![vec![usize::MAX; 2]; n]; // x, y
-    for i in 0..n {
+    let mut c: Vec<Vec<usize>> = vec![vec![usize::MAX; 2]; n + 1]; // x, y
+    for i in 1..=n {
         let [f, b]: [usize; 2] = lines
             .next()
             .unwrap()
@@ -18,47 +18,50 @@ fn main() {
             .collect::<Vec<_>>()
             .try_into()
             .unwrap();
-        calories[i][0] = 1000 - f;
-        calories[i][1] = 1000 - b;
+        c[i][0] = 1000 - f;
+        c[i][1] = 1000 - b;
     }
-    let calories = calories;
+    let c = c;
 
-    // Generate costs for all 4 combinations of carrying torches.
-    let mut cost: Vec<[usize; 4]> = vec![[0; 4]; n];
-    for i in 0..n {
-        for m in 0..4 {
-            let mut c = 0;
-            // front
-            if m & 0b01 != 0 {
-                c += calories[i][0];
-            }
-            // back
-            if m & 0b10 != 0 {
-                c += calories[i][1];
-            }
-            cost[i][m] = c;
-        }
-    }
+    // Each person has 3 states: dark, light, torch
+    let max = usize::MAX / 2;
+    let mut dp: Vec<[[usize; 3]; 3]> = vec![[[max; 3]; 3]; n + 1];
+    dp[0][1][1] = 0;
 
-    let mut dp: Vec<[usize; 4]> = vec![[usize::MAX / 2; 4]; n];
+    for i in 1..=n {
+        dp[i][0][0] = dp[i - 1][1][1];
+        dp[i][1][0] = dp[i - 1][2][1];
+        dp[i][0][1] = dp[i - 1][1][2];
+        dp[i][1][1] = dp[i - 1][2][2];
 
-    for m in 1..4 {
-        dp[0][m] = cost[0][m];
-    }
+        dp[i][2][1] = dp[i][2][1]
+            .min(dp[i - 1][0][1] + c[i][0])
+            .min(dp[i - 1][1][1] + c[i][0])
+            .min(dp[i - 1][2][1] + c[i][0])
+            .min(dp[i - 1][1][2] + c[i][0])
+            .min(dp[i - 1][2][2] + c[i][0]);
 
-    for i in 1..n {
-        for m in 0..4 {
-            for n in 0..4 {
-                // test all combinations of masks for the two columns
-                let prev_front_lit = n & 0b01 != 0 || n & 0b10 != 0 || m & 0b01 != 0;
-                let prev_back_lit = n & 0b01 != 0 || n & 0b10 != 0 || m & 0b10 != 0;
-                if prev_front_lit && prev_back_lit {
-                    // Mask is valid; there are at least 2 torches in the 2x2 area
-                    dp[i][m] = dp[i][m].min(dp[i - 1][n] + cost[i][m]);
-                }
-            }
-        }
+        dp[i][1][2] = dp[i][1][2]
+            .min(dp[i - 1][1][0] + c[i][1])
+            .min(dp[i - 1][1][1] + c[i][1])
+            .min(dp[i - 1][2][1] + c[i][1])
+            .min(dp[i - 1][1][2] + c[i][1])
+            .min(dp[i - 1][2][2] + c[i][1]);
+
+        dp[i][2][2] = dp[i][2][2]
+            .min(dp[i - 1][0][0] + c[i][0] + c[i][1])
+            .min(dp[i - 1][1][0] + c[i][0] + c[i][1])
+            .min(dp[i - 1][0][1] + c[i][0] + c[i][1])
+            .min(dp[i - 1][1][1] + c[i][0] + c[i][1])
+            .min(dp[i - 1][2][1] + c[i][0] + c[i][1])
+            .min(dp[i - 1][1][2] + c[i][0] + c[i][1])
+            .min(dp[i - 1][2][2] + c[i][0] + c[i][1]);
     }
 
-    println!("{}", dp[n - 1].iter().min().unwrap());
+    let result = dp[n][1][1]
+        .min(dp[n][2][1])
+        .min(dp[n][1][2])
+        .min(dp[n][2][2]);
+
+    println!("{}", result);
 }
