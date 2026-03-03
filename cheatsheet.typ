@@ -98,10 +98,13 @@ let [n, q]: [usize; 2] = lines
 #note[
   This is unoptimal as it allocates a `Vec` when it is not necessary, but in my experience this was negligible. It can however be improved as such:
   ```rs
-  let mut line = lines.next().unwrap().unwrap().split_whitespace();
+  let line = lines.next().unwrap().unwrap()
+  let mut iter = line.trim().split_whitespace();
   let n: usize = iter.next().unwrap().parse().unwrap();
-  let q: usize = iter.next().unwrap().parse().unwrap();
+  let l: f32 = iter.next().unwrap().parse().unwrap();
+  let h: f32 = iter.next().unwrap().parse().unwrap();
   ```
+  This is useful for example when reading different types on the same line.
 ]
 
 ==== Reading a list of values
@@ -134,6 +137,8 @@ for i in 0..n {
 ```
 
 I prefer the first of the three, but the others can be useful if the line contains more complex input.
+
+==== Interactive programs (TODO)
 
 === Bitmasks and bitwise operations (TODO)
 

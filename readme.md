@@ -41,6 +41,7 @@ Most notably, this applies to the `try_into`-function which has to be imported i
 | 100           | `nio24-finale-regnbuelakris`      |                     |
 | 100           | `nio24-finale-manngard`           |                     |
 | 100           | `nio24-finale-trebygger`          |                     |
+| 18            | `nio24-finale-fiender`            |                     |
 | 100           | `nio25-runde2-byggeklosser`       |                     |
 | 15            | `nio25-runde2-oyberedskap`        |                     |
 | 16            | `nio25-runde2-tennis`             |                     |
@@ -49,6 +50,7 @@ Most notably, this applies to the `try_into`-function which has to be imported i
 | 100           | `nio25-finale-runddans`           |                     |
 | 0             | `nio25-finale-ormhull`            |                     |
 | 100           | `nio25-finale-belysning`          |                     |
+| 91            | `nio25-finale-jobbjakt`           |                     |
 | 41            | `nio26-runde2-logistikkdroem`     | x                   |
 | 85            | `nio26-runde2-romfart`            | x                   |
 | 100           | `nio26-runde2-klatrevegger`       | x                   |
