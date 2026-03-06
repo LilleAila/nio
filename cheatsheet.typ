@@ -138,7 +138,9 @@ for i in 0..n {
 
 I prefer the first of the three, but the others can be useful if the line contains more complex input.
 
-==== Interactive programs (TODO)
+==== Interactive programs
+
+A general theme across interactive problems is to manipulate the mathematical equation used so that all the local variables are extracted, such that we can precompute the values to be used for each iteration of the program. Input and output are handled the same way as in programs with static input.
 
 === Bitmasks and bitwise operations (TODO)
 
@@ -736,3 +738,77 @@ Note that the previous version is actually a special case of this, in which one 
 == Algorithms
 
 === Binary search (TODO)
+
+=== Probability
+
+One of the tasks usually contain some sort of probability, usually some sort of linear distribution in an interval. Here is my solution for `nio25-finale-jobbjakt`:
+
+Vi er ikke gitt noen globale variabler, men dette er et sannsynlighetsproblem der vi vil fokusere på $N$. Her definerer jeg $N$ som antall jobbtilbud igjen (altså starter man for eksempel på $N=4$, så $N=3$, $N=2$ etc). Jeg inkluderer først de lokale variablene $l$ og $h$ for å løse likningen, men setter disse lik henholdsvis $0$ og $1$, slik at jeg kan sette inn igjen disse variablene etterpå.
+
+Jeg ønsker å fine den forventede verdien for lønn med en gitt $N$. Hvis et gitt tilbud er høyere enn forventningsverdien, skal jeg velge å akseptere det. Jeg starter da ved å definere grunntilstanden $E_0=0$, da man er nødt til å akseptere enhver verdi hvis det ikke er noen tilbud igjen. Videre har jeg at den forventede verdien for $N=1$ er $E_1= (h+l)/2$. For å forenkle dette substituerer jeg $l$ og $h$ som beskrevet og får da at $E_1 = 0.5$.
+
+Når $N=2$, bruker man $E_1$ som terskel på tilbudet. Hvis tilbudet er $<E_1$, takker man nei. Forventningsverdien hvis man takker nei blir da det samme som situasjonen der $N=1$, altså $E_1$. Hvis man takker ja derimot, har vi at tilbudet $>E_1$. Dden forventede verdien ligger da i intervallet $[E_1, h]$. Da dette er en uniform distribusjon har vi nå at den forventede verdien er $(E_1 + h)/2$, som da blir $(E_1 + 1)/2$. Sannsynligheten for at tilbudet ligger i intervallet blir da $1-P_"nei"$ ($1 - E_1$), slik at summen er 1. Hvis vi setter inn verdien for $E_1$ får vi da $0.75$. Den samlede forventningsverdien er gitt ved
+
+$
+  E_2 = underbrace(0.5, P_"nei") dot underbrace(0.5, E_"nei") + underbrace((1 - 0.5), P_"ja") dot underbrace((0.5 + 1) / 2, E_"ja") = 0.625
+$
+
+Jeg kan trekke den samme logikken videre for å beregne $E_3$:
+
+$
+  E_3 = underbrace(0.625, P_"nei") dot underbrace(0.625, E_"nei") + underbrace((1 - 0.625), P_"ja") dot underbrace((0.625 + 1)/2, E_"ja")
+$
+
+Bruker denne logikken til å skrive det generelle uttrykket:
+
+$
+  E_2 = underbrace(E_(n-1), P_"nei") dot underbrace(E_(n-1), E_"nei") + underbrace((1 - E_(n-1)), P_"ja") dot underbrace((E_(n-1) + 1)/2, E_"ja")
+$
+
+Og forenkler dette:
+
+$
+  E_n & = E_(n-1)^2 + 1/2 dot (1 - E_(n-1)) dot (E_(n-1) + 1) \
+      & = E_(n-1)^2 + 1/2 dot (E_(n-1) + 1 - E_(n-1)^2 - E_(n-1)) \
+      & = (2 E_(n-1)^2)/2 + (- E_(n-1)^2 + 1)/2 \
+  E_n & = (1 + E_(n-1)^2)/2
+$
+
+Der $n$ er antall tilbud igjen etter dette tilbudet. Dette kan implementeres i rust ved hjelp av DP med tabulation som følger:
+
+```rs
+use std::io;
+
+fn main() {
+    let mut lines = io::stdin().lines();
+
+    const N_MAX: usize = 20;
+    let mut dp: Vec<f32> = vec![0.0; N_MAX + 1];
+    dp[0] = 0.0;
+    dp[1] = 0.5;
+    for n in 2..=N_MAX {
+        dp[n] = (1.0 + dp[n - 1] * dp[n - 1]) / 2.0;
+    }
+
+    let r: usize = lines.next().unwrap().unwrap().parse().unwrap();
+    for _ in 0..r {
+        let line = lines.next().unwrap().unwrap();
+        let mut iter = line.trim().split_whitespace();
+        let n: usize = iter.next().unwrap().parse().unwrap();
+        let l: f32 = iter.next().unwrap().parse().unwrap();
+        let h: f32 = iter.next().unwrap().parse().unwrap();
+
+        for i in 0..n {
+            let n_remaining = n - i - 1;
+            let v: f32 = lines.next().unwrap().unwrap().parse().unwrap();
+
+            if v >= l + (h - l) * dp[n_remaining] {
+                println!("ja");
+                break;
+            } else {
+                println!("nei");
+            }
+        }
+    }
+}
+```

@@ -48,7 +48,7 @@ Most notably, this applies to the `try_into`-function which has to be imported i
 | 0             | `nio25-runde2-utjevning`          |                     |
 | 100           | `nio25-finale-papirfly`           |                     |
 | 100           | `nio25-finale-runddans`           |                     |
-| 0             | `nio25-finale-ormhull`            |                     |
+| 11            | `nio25-finale-ormhull`            |                     |
 | 100           | `nio25-finale-belysning`          |                     |
 | 91            | `nio25-finale-jobbjakt`           |                     |
 | 41            | `nio26-runde2-logistikkdroem`     | x                   |
