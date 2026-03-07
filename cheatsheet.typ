@@ -156,6 +156,58 @@ A general theme across interactive problems is to manipulate the mathematical eq
   [`>>`], [Right shift],
 )
 
+Bitmasks are useful when one needs to store many related booleans in a way which makes it easier to run operations on multiple of them at the same time. It is usually easiest to use this if the number of booleans is less than 64, which means that it can fit into an `u64`. Here is an example usage of bitmasks to handle the door permissions in `nio23-finale-noekkelkort`:
+
+```rs
+use std::collections::{HashSet, VecDeque};
+use std::convert::TryInto;
+use std::io;
+
+fn main() {
+    let mut lines = io::stdin().lines();
+
+    let [n, m, k, t]: [usize; 4];
+
+    let all_permissions: u32 = (1 << k) - 1;
+
+    // graph[from] = [(to, permissions)]
+    let mut graph: Vec<Vec<(usize, u32)>> = vec![Vec::new(); n];
+    // edges in the graph to check
+    let mut pairs: Vec<(usize, usize, u32)> = Vec::new();
+
+    for &(u, v, p) in &pairs {
+        let mut queue: VecDeque<usize> = VecDeque::new();
+        let mut visited: HashSet<usize> = HashSet::new();
+        let permissions = !p & all_permissions;
+        queue.push_back(u);
+
+        let mut result = true;
+
+        // Note that this is an inefficient implementation of BFS
+        // It would be better to check if it is visited *before* pushing
+        while let Some(a) = queue.pop_front() {
+            if visited.contains(&a) {
+                continue;
+            }
+            visited.insert(a);
+
+            if a == v {
+                result = false;
+                break;
+            }
+
+            for &(n, ps) in &graph[a] {
+                if permissions & ps != 0 {
+                    queue.push_back(n);
+                }
+            }
+        }
+
+        println!("{}", result as u8);
+    }
+}
+```
+
 === Match
 
 Useful for pattern matching. Works similar to that of languages like haskell or python. It can contain expressions and also return values directly.
@@ -569,9 +621,108 @@ for &(n, c) in &graph[node] {
 }
 ```
 
-==== BFS (TODO)
+==== BFS / DFS
 
-==== DFS (TODO)
+BFS (breadth-first search) and DFS (depth-first search) are both algorithms used to traverse an unweighted graph. They both use a queue, with the difference being that BFS uses a FIFO-queue while DFS uses a LIFO-stack. They both have an asymptotic time complexity of $O (V + E)$. Here is a simple example implementation of BFS in rust which returns a boolean for whether or not a path exists:
+
+```rs
+use std::collections::{HashSet, VecDeque};
+
+let graph: Vec<Vec<usize>>;
+let start: usize;
+let target: usize;
+
+let mut queue: VecDeque<usize> = VecDeque::new();
+let mut visited: HashSet<usize> = HashSet::new();
+queue.push_back(start);
+visited.insert(start);
+
+let mut result = false;
+
+while let Some(a) = queue.pop_front() {
+  if a == target {
+    result = true;
+    break;
+  }
+
+  for &n in &graph[a] {
+    if !visited.contains(&n) {
+      queue.push_back(n);
+      visited.insert(n);
+    }
+  }
+}
+```
+
+This pushes to the back and pops from the front, thus making it a breadth-first search in which all neighbor nodes are searched before continuing to the next level. The only difference is changing this line:
+
+```diff
+- queue.push_back(n);
++ queue.push_front(n);
+```
+
+BFS is often the best when trying to find the shortest path between two nodes, while DFS is preferred if all we need is to know whether or not a path exists. Finding the path length with BFS can be done as such:
+
+```rs
+use std::collections::{HashSet, VecDeque};
+
+let graph: Vec<Vec<usize>>;
+let start: usize;
+let target: usize;
+
+let mut queue: VecDeque<(usize, usize)> = VecDeque::new();
+let mut visited: HashSet<usize> = HashSet::new();
+queue.push_back((start, 0));
+visited.insert(start);
+
+let mut result = None;
+
+while let Some((a, c)) = queue.pop_front() {
+  if a == target {
+    result = Some(c);
+    break;
+  }
+
+  for &n in &graph[a] {
+    if !visited.contains(&n) {
+      queue.push_back((n, c+1));
+      visited.insert(n);
+    }
+  }
+}
+```
+
+==== 0-1 BFS
+
+0-1 BFS is an extension of BFS in which a double ended queue is used to determine which nodes to traverse first. This is used for a special case of weighted graphs where the weights are all either $0$ or $1$.
+
+```rs
+use std::collections::VecDeque;
+
+let n: usize; // n of nodes
+let graph: Vec<Vec<(usize, usize)>>; // (target, weight)
+let start: usize;
+let target: usize;
+
+let mut queue: VecDeque<usize> = VecDeque::new();
+let mut dist: Vec<usize> = vec![usize::MAX; n];
+queue.push_back(start);
+
+while let Some(a) = queue.pop_front() {
+  for &(n, c) in &graph[a] {
+    let new_dist = dist[a] + c;
+    if new_dist < dist[n] {
+      dist[n] = new_dist;
+      if c == 0 {
+        // Prioritize weight 0
+        queue.push_front(n);
+      } else {
+        queue.push_back(n);
+      }
+    }
+  }
+}
+```
 
 === DP (TODO)
 
