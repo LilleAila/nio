@@ -142,7 +142,69 @@ I prefer the first of the three, but the others can be useful if the line contai
 
 A general theme across interactive problems is to manipulate the mathematical equation used so that all the local variables are extracted, such that we can precompute the values to be used for each iteration of the program. Input and output are handled the same way as in programs with static input.
 
-=== Bitmasks and bitwise operations (TODO)
+=== Strings and chars
+
+Parsing a number in a string can be done like this:
+
+```rs
+let x: usize = s.parse().unwrap();
+let x: i32 = s.parse().unwrap();
+```
+
+And with chars, as such:
+
+```rs
+let s: char = 'a';
+let x: u32 = s.to_digit(10);
+let x: u8 = s.to_digit(10) as u8;
+
+let s: &str = "123";
+let x: Vec<u32> = s.chars().map(|x| x.to_digit(10)).collect();
+```
+
+One can get an iterator of chars from a string by using `.chars()`. An alternative and more efficient way to get the value as a digit is by converting it to u8 to get its ascii value.
+
+```rs
+let c: char = '3';
+let n: u8 = c as u8 - b'0';
+let n: usize = (c as u8 - b'0') as usize;
+```
+
+Note that this only works when $x in [0, 9]$.
+
+=== String and &str
+
+`String` is an owned and heap-allocated string type. This means that it can grow and shrink.
+
+```rs
+let mut s: String = String::from("Hello");
+s.push_back(", world!");
+
+println("{}", s);
+```
+
+On the other hand, `&str` refers to a string slice. This is a borrowed reference, which is usually immutable.
+
+```rs
+let s: String = Strong::from("hello");
+let slice: &str = s[0..2]; // "he"
+```
+
+It is possible to convert between them:
+
+```rs
+let s: String = String::from("hello");
+let slice: &str = &s;
+let slice: &str = s.as_str();
+
+let slice: &str = "hello";
+let s = slice.to_string();
+let s = String::from(slice);
+```
+
+`io::stdin().lines().next().unwrap().unwrap()` returns a `String`.
+
+=== Bitmasks and bitwise operations
 
 #table(
   columns: 2,
@@ -239,6 +301,16 @@ match foo {
 #note[
   One can use the operator `@` to set a value while matching a pattern. For example, one can combine the pattern `x` and `1..=10` into a single expression with `x @ 1..=10`, which will keep the original value in `x` while matching it against the pattern.
 ]
+
+
+=== Integer overflow
+
+In problems where large numbers are required, for example finding the number of unique nonempty subsequences, the number grows exponentially and thus we need to clamp it to some number. Usually this number is defined as $M O D = 1 thin 000 thin 000 thin 007$ (because this is a prime number). In the aforementioned problem, we can then use the following to ensure the number stays within the bounds of a 64-bit integer.
+
+```rs
+const MOD: usize = 1_000_000_007;
+let new_subsequences = (subsequences * 2 - last[x as usize] + MOD) % MOD;
+```
 
 === Time complexity
 
