@@ -197,6 +197,8 @@ I prefer the first of the three, but the others can be useful if the line contai
 
 A general theme across interactive problems is to manipulate the mathematical equation used so that all the local variables are extracted, such that we can precompute the values to be used for each iteration of the program. Input and output are handled the same way as in programs with static input.
 
+=== Memory Usage (TODO)
+
 === Strings and chars
 
 Parsing a number in a string can be done like this:
@@ -324,6 +326,8 @@ fn main() {
     }
 }
 ```
+
+==== Useful Bit Hacks (TODO)
 
 === Match
 
@@ -865,6 +869,10 @@ while let Some(a) = queue.pop_front() {
 }
 ```
 
+==== Strongly Connected Components (TODO)
+
+==== Floyd-Warshall (TODO)
+
 ==== Minimum Spanning Tree
 
 A minimum spanning tree (MST) in a connected, weighted and undirected graph is a subset of the edges which
@@ -893,6 +901,12 @@ for (w, u, v) in edges {
 ```
 
 === DP (TODO)
+
+==== Bitmask (TODO)
+
+==== Trees (TODO)
+
+==== Sliding Window / Prefix Sums (TODO)
 
 === Binary trees
 
@@ -1000,6 +1014,10 @@ for &a in &xs[1..] {
   }
   ```
 ]
+
+=== Fenwick Trees (TODO)
+
+=== Segment Trees (TODO)
 
 === DSU / Union-Find
 
@@ -1246,3 +1264,11 @@ fn main() {
     }
 }
 ```
+
+=== Prefix Sums (TODO)
+
+=== Sieve of Eratosthenes (TODO)
+
+=== Convex Hull (TODO)
+
+=== Sliding Window / Two Pointers (TODO)
