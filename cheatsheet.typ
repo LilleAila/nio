@@ -2,12 +2,12 @@
 
 #set text(
   font: "DejaVu Sans",
-  size: 10pt,
+  size: 8pt,
 ) // Uses fonts from system, requires to be installed
 
 #set page(
   paper: "a4",
-  margin: (top: 4cm, bottom: 4cm, left: 1.5cm, right: 1.5cm),
+  margin: (top: 2cm, bottom: 2cm, left: 1cm, right: 1cm),
   header: {
     grid(
       columns: (1fr, auto),
@@ -19,7 +19,9 @@
     line(length: 100%)
     align(right)[#counter(page).display("1/1", both: true)]
   },
+  columns: 2,
 )
+#set par(leading: 0.55em)
 
 #show raw: set text(font: "JetBrainsMono NF")
 #show raw.where(block: true): x => block(
@@ -53,6 +55,40 @@ This document contains commonly used code for competitive programming, specifica
 
 == Basics
 
+=== Vim config
+
+Here is a basic vim config for competitive programming in rust:
+
+```vim
+let mapleader = " "
+nnoremap <leader>ff :%!rustfmt<cr>
+nnoremap <leader>fm :Explore<cr>
+
+syntax on
+set clipboard=unnamedplus
+set mouse=a
+set hlsearch
+set incsearch
+set ignorecase
+set smartcase
+
+set number
+set relativenumber
+set cursorline
+set nowrap
+
+set tabstop=4
+set shiftwidth=4
+set expandtab
+set autoindent
+set smartindent
+
+hi CursorLine cterm=NONE ctermbg=236
+hi MatchParen ctermfg=0 ctermbg=188
+```
+
+Place this in `~/.vimrc` at the start of the competition.
+
 === Rust boilerplate
 
 ```rs
@@ -69,6 +105,25 @@ The program can then be compiled and run with
 ```sh
 rustc -O -o main main.rs && ./main < 1.txt
 ```
+
+Additionally, the rust code can be formatted with
+
+```sh
+rustfmt main.rs
+```
+
+#note[
+  This is slightly more efficient than the above:
+
+  ```rs
+  use std::io::{self, BufRead};
+
+  fn main() {
+    let stdin = io:.stdin();
+    let mut lines = stdin.lock().lines();
+  }
+  ```
+]
 
 === Capturing input
 
@@ -486,8 +541,9 @@ use std::collections::HashSet;
 
 let mut set: HashSet<usize> = HashSet::new();
 
-set.insert(5);
-set.insert(6);
+set.insert(5); // true
+set.insert(6); // true
+set.insert(6); // false (already exists)
 
 assert!(set.contains(&5));
 assert!(!set.contains(&7));
@@ -498,6 +554,19 @@ set.remove(&6);
 #note[
   When doing a lookup, one uses a reference to the value, not the value itself (`set.contains(&5)`). The same applies to HashMaps.
 ]
+
+HashSets also have some useful in-place functions
+
+```rs
+let mut set: HashSet<usize> = HashSet::from([1, 2, 3, 4, 5, 6]);
+
+set.retain(|x| x % 2 == 0);
+dbg!(&set); // { 2, 4, 6 }
+
+let set_b: HashSet<usize> = HashSet::from([7, 8, 9]);
+set.extend(set_b);
+dbg!(&set); // { 2, 4, 6, 7, 8, 9 }
+```
 
 === HashMap
 
@@ -796,6 +865,33 @@ while let Some(a) = queue.pop_front() {
 }
 ```
 
+==== Minimum Spanning Tree
+
+A minimum spanning tree (MST) in a connected, weighted and undirected graph is a subset of the edges which
+
+- Connects all vertices
+- Has no cycles (and is thus a tree)
+- Contains excactly $V - 1$ edges if there are $V$ vertices.
+
+===== Kruskal's algorithm for MST
+
+Kruskal's algorithm is an algorithm used to find the total weight of the minimum spanning tree. This uses the DSU-implementation also found in this document.
+
+```rs
+// Given a list of edges with (weight, from, to)
+let edges: Vec<(i32, usize, usize)>;
+
+edges.sort_by_key(|&(w, _, _)| w); // Sort by weight ascending
+let mut dsu = DSU::new(n);
+let mut mst_weight = 0;
+
+for (w, u, v) in edges {
+    if dsu.union(u, v) {
+        mst_weight += w;
+    }
+}
+```
+
 === DP (TODO)
 
 === Binary trees
@@ -905,6 +1001,103 @@ for &a in &xs[1..] {
   ```
 ]
 
+=== DSU / Union-Find
+
+A Disjoint Set Union is a data structure that can keep track of multiple disjoint / non-overlapping sets, and can efficiently do the following operations:
+
+- Find: Determine which set an element belongs to
+- Union: Merge two sets into one
+
+This is useful to track connectivity. An example implementation in rust is as follows:
+
+```rs
+struct DSU {
+    parent: Vec<usize>,
+    size: Vec<usize>,
+}
+
+impl DSU {
+    fn new(n: usize) -> Self {
+        DSU {
+            parent: (0..n).collect(),
+            size: vec![1; n],
+        }
+    }
+
+    fn find(&mut self, x: usize) -> usize {
+        if self.parent[x] != x {
+            // Compress the path with recursion
+            self.parent[x] = self.find(self.parent[x]);
+        }
+        self.parent[x]
+    }
+
+    // False if the sets are already the same
+    fn union(&mut self, x: usize, y: usize) -> bool {
+        let mut rx = self.find(x);
+        let mut ry = self.find(y);
+        if rx == ry {
+            return false;
+        }
+        // Union the larger of the two sets
+        if self.size[rx] < self.size[ry] {
+            std::mem::swap(&mut rx, &mut ry);
+        }
+        self.parent[ry] = rx;
+        self.size[rx] += self.size[ry];
+        true
+    }
+}
+```
+
+#note[
+  The time complexity of both the `find` and `union` methods in a `DSU` both have the time complexity $O(alpha (n))$ where $alpha$ is the inverse Ackermann function. In practice, $alpha (n) <= 5$ for all reasonable values of $n$, so it can be treated as constant.
+]
+
+This can be a bit confusing to think about, but here is an example:
+
+```rs
+let mut dsu = DSU::new(5);
+// Has 5 sets: {0}, {1}, {2}, {3}, {4}
+
+dsu.union(0, 1);
+// Has 4 sets: {0, 1}, {2}, {3}, {4}
+dsu.union(1, 2);
+// Has 3 sets: {0, 1, 2}, {3}, {4}
+dsu.union(3, 4);
+// Has 2 sets: {0, 1, 2}, {3, 4}
+dsu.union(1, 3)
+// Has 1 set: {0, 1, 2, 3, 4}
+```
+
+I used this in my solution for `nio24-runde2-tognett`. Note that this solution is not optimal, and only gave `65/100` points, however this is still much more efficient than one which uses BFS for each iteration.
+
+```rs
+let mut dsu = DSU::new(n);
+
+for &(a, b) in &trains {
+    dsu.union(a, b);
+
+    let mut removed = 0;
+    for u in 0..n {
+        let mut to_remove = Vec::new();
+        for &v in &plane_graph[u] {
+            if dsu.find(u) == dsu.find(v) {
+                to_remove.push(v);
+            }
+        }
+        removed += to_remove.len();
+        for v in to_remove {
+            plane_graph[u].remove(&v);
+        }
+    }
+
+    println!("{}", removed / 2);
+}
+```
+
+This is very useful in cases where one wants to find the connected components in a graph. Instead of running a BFS search from one node, one can use a DSU to store it. Using that in this task would be $O (k (n + m))$, while using a DSU has the same time complexity but is much faster in practice because the overhead of using a BFS and queue is avoided.
+
 === Difference arrays
 
 Difference arrays provide a more efficient way to update all values within an interval. Instead of looping over all items in the interval $[a, b]$, one instead just sets the values at $a$ and $b$, then passes over the array afterwards. A boolean implementation could look like this (taken from my solution to `nio23-runde2-lynnedslag`):
@@ -958,9 +1151,27 @@ for x in xs {
 
 Note that the previous version is actually a special case of this, in which one would use `+= x % 2` (which I have simplified to using booleans).
 
-== Algorithms
+== Various other algorithms
 
-=== Binary search (TODO)
+=== Binary search
+
+Given a sorted list, one can find a value in $O (log n)$ using binary search. This also works for any monotonic function in which one wants to find the value in which it turns, and is thus useful in many problems. Here is an example of binary search implemented with a monotonic boolean function which starts at false and then becomes true, like `[false, false, false, true, true]`.
+
+```rs
+let mut a: usize = 0;
+let mut b: usize = n; // n is the max value
+let mut result: Option<usize> = None;
+
+while a <= b {
+  let mid = (a + b) / 2;
+  if some_predicate(mid) {
+    result = Some(mid);
+    b = mid - 1;
+  } else {
+    a = mid + 1;
+  }
+}
+```
 
 === Probability
 
