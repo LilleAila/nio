@@ -53,9 +53,9 @@
 
 This document contains commonly used code for competitive programming, specifically in rust and written for the 2026 finale in the norwegian olympiad of informatics.
 
-== Basics
+= Basics
 
-=== Vim config
+== Vim config
 
 Here is a basic vim config for competitive programming in rust:
 
@@ -89,7 +89,7 @@ hi MatchParen ctermfg=0 ctermbg=188
 
 Place this in `~/.vimrc` at the start of the competition.
 
-=== Rust boilerplate
+== Rust boilerplate
 
 ```rs
 use std::convert::TryInto;
@@ -125,7 +125,7 @@ rustfmt main.rs
   ```
 ]
 
-=== Capturing input
+== Capturing input
 
 We will use the stdin lines iterator defined above to read the input:
 
@@ -162,7 +162,7 @@ let [n, q]: [usize; 2] = lines
   This is useful for example when reading different types on the same line.
 ]
 
-==== Reading a list of values
+=== Reading a list of values
 
 If the input is a single line split into values, it can be read as such:
 
@@ -193,11 +193,11 @@ for i in 0..n {
 
 I prefer the first of the three, but the others can be useful if the line contains more complex input.
 
-==== Interactive programs
+=== Interactive programs
 
 A general theme across interactive problems is to manipulate the mathematical equation used so that all the local variables are extracted, such that we can precompute the values to be used for each iteration of the program. Input and output are handled the same way as in programs with static input.
 
-=== Memory Usage
+== Memory Usage
 
 This table is an overview of memory usage on the stack by different types. Note that some types such as `&str` take 16 bytes on the stack, and contain a pointer to more data on the heap.
 
@@ -226,7 +226,7 @@ This table is an overview of memory usage on the stack by different types. Note 
   )
 ])
 
-=== Strings and chars
+== Strings and chars
 
 Parsing a number in a string can be done like this:
 
@@ -256,7 +256,7 @@ let n: usize = (c as u8 - b'0') as usize;
 
 Note that this only works when $x in [0, 9]$.
 
-=== String and &str
+== String and &str
 
 `String` is an owned and heap-allocated string type. This means that it can grow and shrink.
 
@@ -288,7 +288,7 @@ let s = String::from(slice);
 
 `io::stdin().lines().next().unwrap().unwrap()` returns a `String`.
 
-=== Bitmasks and bitwise operations
+== Bitmasks and bitwise operations
 
 #table(
   columns: 2,
@@ -354,7 +354,7 @@ fn main() {
 }
 ```
 
-==== Useful Bit Hacks
+=== Useful Bit Hacks
 
 Check whether a number is a power of 2:
 
@@ -445,7 +445,7 @@ Iterate over all masks of size `n`:
 for mask in 0..(1 << n) { }
 ```
 
-=== Match
+== Match
 
 Useful for pattern matching. Works similar to that of languages like haskell or python. It can contain expressions and also return values directly.
 
@@ -478,7 +478,7 @@ match foo {
 ]
 
 
-=== Integer overflow
+== Integer overflow
 
 In problems where large numbers are required, for example finding the number of unique nonempty subsequences, the number grows exponentially and thus we need to clamp it to some number. Usually this number is defined as $M O D = 1 thin 000 thin 000 thin 007$ (because this is a prime number). In the aforementioned problem, we can then use the following to ensure the number stays within the bounds of a 64-bit integer.
 
@@ -487,7 +487,7 @@ const MOD: usize = 1_000_000_007;
 let new_subsequences = (subsequences * 2 - last[x as usize] + MOD) % MOD;
 ```
 
-=== Time complexity
+== Time complexity
 
 Depending on the constraints in the problem, different algorithms should be chosen, approximately based on this:
 
@@ -503,9 +503,9 @@ Depending on the constraints in the problem, different algorithms should be chos
   [10], [$O (n!)$],
 )
 
-== Useful data types
+= Useful data types
 
-=== Option
+== Option
 
 An option holds an optional value, similar to the `Maybe`-monad in haskell:
 
@@ -555,7 +555,7 @@ for &s in &socks {
 }
 ```
 
-=== Enums
+== Enums
 
 Can be defined with
 
@@ -567,7 +567,7 @@ enum Instruction {
 }
 ```
 
-=== Vectors
+== Vectors
 
 Vectors are lists of items with a dynamic length. Here are some examples:
 
@@ -579,7 +579,7 @@ xs.push(42); // xs = vec![42]
 xs.push(123); // xs = vec![42, 123]
 ```
 
-==== VecDeque
+=== VecDeque
 
 // FIXME: should maybe be moved down to the data structures and algorithms section?
 
@@ -605,7 +605,7 @@ while let Some(x) = queue.pop_front() {
 
 Note that this is just pseudocode.
 
-=== Slices
+== Slices
 
 A vector can be indexed with a slice as such:
 
@@ -650,9 +650,9 @@ match &xs[..] {
 let slice_sum = xs[1..4].iter().sum(); // 6
 ```
 
-=== Sets and maps
+== Sets and maps
 
-==== HashSet
+=== HashSet
 
 Note that most set operations use borrows, with the exception of `insert`.
 
@@ -688,7 +688,7 @@ set.extend(set_b);
 dbg!(&set); // { 2, 4, 6, 7, 8, 9 }
 ```
 
-=== HashMap
+== HashMap
 
 HashMaps store data in a map with hashed keys and have $O(1)$ operations.
 
@@ -729,7 +729,7 @@ map.entry(4).and_modify(|ref mut v| v += 1).or_insert(1); // map[&4] = 1
 map.entry(4).and_modify(|v| *v += 1).or_insert(1); // map[&4] = 2
 ```
 
-=== BTreeSet and BTreeMap
+== BTreeSet and BTreeMap
 
 BTreeSet and BTreeMap work conceptually same as their Hash counterparts, with the addition that they are automatically sorted. The difference is that the Hash versions are (as the name suggests) hash-based with $O(1)$ operations, and the BTree versions have $O(log n)$ operations..
 
@@ -766,9 +766,9 @@ let left_depth: Option<&&str> = map.range(..10).next_back().map(|(_, v)| v);
 let left_depth: Option<&str> = map.range(..10).next_back().map(|(_, v)| *v);
 ```
 
-== Data structures
+= Data structures
 
-=== Graphs
+== Graphs
 
 I like to define graphs as follows:
 
@@ -809,7 +809,7 @@ for _ in 0..m {
 }
 ```
 
-==== Dijkstra
+=== Dijkstra
 
 Dijkstra's algorithm is an algorithm for finding the lowest total weight path between two nodes in a graph. It has a time complexity of $O ((V + E) log V)$. It requires the following imports:
 
@@ -882,7 +882,7 @@ for &(n, c) in &graph[node] {
 }
 ```
 
-==== BFS / DFS
+=== BFS / DFS
 
 BFS (breadth-first search) and DFS (depth-first search) are both algorithms used to traverse an unweighted graph. They both use a queue, with the difference being that BFS uses a FIFO-queue while DFS uses a LIFO-stack. They both have an asymptotic time complexity of $O (V + E)$. Here is a simple example implementation of BFS in rust which returns a boolean for whether or not a path exists:
 
@@ -953,7 +953,7 @@ while let Some((a, c)) = queue.pop_front() {
 }
 ```
 
-==== 0-1 BFS
+=== 0-1 BFS
 
 0-1 BFS is an extension of BFS in which a double ended queue is used to determine which nodes to traverse first. This is used for a special case of weighted graphs where the weights are all either $0$ or $1$.
 
@@ -985,7 +985,7 @@ while let Some(a) = queue.pop_front() {
 }
 ```
 
-==== Bellman-Ford
+=== Bellman-Ford
 
 The time complexity of this algorithm is $O (V dot E)$. The algorithm works by iterating through all edges `n-1` times, and relaxing the edges if possible. The benefit to this compared to Dijkstra's algorithm is that it works with negative edge weights, while Dijkstra does not. In addition, this has the ability to detect negative cycles, which is a cycle with a negative total weight such that there does not exist any shortest path, as the weight will just approach $- infinity$. Here is a simple implementation in rust:
 
@@ -1023,7 +1023,7 @@ for &(u, v, w) in &edges {
 }
 ```
 
-==== Floyd-Warshall
+=== Floyd-Warshall
 
 The Floyd-Warshall algorithm is an algorithm for finding the all the shortest paths between any two nodes in a directed or undirected graph.
 
@@ -1050,7 +1050,7 @@ for k in 0..n {
 
 This algorithm is $O(V^3)$, so it is very slow for finding a single path compared to Dijkstra's algorithm, but it will be much faster if one needs to find the minimum total weight of all paths in the graph.
 
-==== Strongly Connected Components
+=== Strongly Connected Components
 
 In a directed graph, a strongly connected component is a maximal group of vertices such that for every pair of vertices $u$ and $v$ in the group, there is a path from $u -> v$ and $v -> u$. This means that every node can reach every other node following the direction of the edges.
 
@@ -1068,7 +1068,7 @@ In a directed graph, a strongly connected component is a maximal group of vertic
 
 If the SCC is compressed into a single node, this becomes a Directed Acyclic Graph (DAG). It is also useful for detecting cycles in directed graphs.
 
-===== Kosaraju's algorithm
+==== Kosaraju's algorithm
 
 When the SCC has more than one node, this means that there exists a cycle. We can use Kosaraju's algorithm to take a directed graph and create the SCC from this:
 
@@ -1150,7 +1150,7 @@ dbg!(&id, &component);
 
 This algorithm runs DFS twice, and as such it has a time complexity of $O(V + E)$.
 
-===== Building a DAG
+==== Building a DAG
 
 When building a DAG from an SCC, each component becomes a single node. For every edge $u -> v$ in the original graph, if `component[u] != component[v]`, it is an edge between two SCCs and will add an edge between them in the SCC. The above algorithm can be extended as follows:
 
@@ -1176,7 +1176,7 @@ for edges in dag.iter_mut() {
 dbg!(&dag);
 ```
 
-==== 2-SAT
+=== 2-SAT
 
 2-Satisfiability is a type of boolean problem where one has $n$ boolean variables and there are clauses of the form $a or b$, for example:
 
@@ -1236,7 +1236,7 @@ if ok {
   The graph has to have twice as many nodes as there are variables. Each variable has the true value at $2i$ and the false value at $2i+1$.
 ]
 
-==== Topological sort
+=== Topological sort
 
 A topological sort is an ordering of nodes in a directed acyclic graph (DAG) such that for every directed edge $u -> v$, node $u$ comes before node $v$ in the ordering. Note that this is only possible for acyclic graphs.
 
@@ -1278,7 +1278,7 @@ for start in 0..n {
 
 Now, `order` will be a `VecDeque` with the correct ordering of the nodes.
 
-==== Minimum Spanning Tree
+=== Minimum Spanning Tree
 
 A minimum spanning tree (MST) in a connected, weighted and undirected graph is a subset of the edges which
 
@@ -1286,7 +1286,7 @@ A minimum spanning tree (MST) in a connected, weighted and undirected graph is a
 - Has no cycles (and is thus a tree)
 - Contains excactly $V - 1$ edges if there are $V$ vertices.
 
-===== Kruskal's algorithm for MST
+==== Kruskal's algorithm for MST
 
 Kruskal's algorithm is an algorithm used to find the total weight of the minimum spanning tree. This uses the DSU-implementation also found in this document.
 
@@ -1305,7 +1305,7 @@ for (w, u, v) in edges {
 }
 ```
 
-=== Dynamic Programming / DP
+== Dynamic Programming / DP
 
 Dynamic Programming (DP) is a technique to solve problems by breaking them into overlapping subproblems and storing their results to avoid recomputation. DP is applicable to a problem if it satisfies the following:
 
@@ -1358,7 +1358,7 @@ If a problem looks like DP can be applied, it is usually best to first sketch th
 
 In NIO problems, DP is also often used when there is a problem in which the program computes multiple different sets of inputs during the same runtime. In this case, the solution is to extract these variables such that a DP representation can be created independently of the variables that change for each iteration of the program, then reference this and add these parameters back in afterwards. An example can be seen below in my solution to `nio25-finale-belysning` under Intervals.
 
-==== Longest increasing subsequence
+=== Longest increasing subsequence
 
 Given a list of values, this can be used to find the longest increasing subsequence. For example in the array `[1, 4, 0, 5]`, the LIS would be `[1, 4, 5]` with a length of 3.
 
@@ -1379,7 +1379,7 @@ for i in 1..n {
 let result: i32 = *dp.iter().max().unwrap();
 ```
 
-==== Knapsack
+=== Knapsack
 
 Given a set of values with different weights and values, we want to find the maximum value possible within the weight bounds.
 
@@ -1402,7 +1402,7 @@ let result = dp[capacity];
 
 This has time complexity $O (n k)$ where $n$ is the number of items and $k$ is the maximum capacity.
 
-==== 2D DP
+=== 2D DP
 
 This is an example use of DP for finding the total number of unique paths from the top-left to the bottom-right in a grid.
 
@@ -1427,7 +1427,7 @@ for i in 0..y {
 let result = dp[y-1][x-1];
 ```
 
-==== Bitmask DP
+=== Bitmask DP
 
 Bitmasks and bitmask DP are very useful when `n` is small, often around 20. Here is an example solution for the traveling salesman problem. Here, we have a salesman who needs to visit $n$ cities excactly once and return to the starting city. Each pair of cities has a distance (cost) associated with traveling between them. The goal is to find the shortest route that visits each city excactly once and returns to the starting city.
 
@@ -1473,7 +1473,7 @@ for u in 1..n {
 println!("{}", result); // 80
 ```
 
-==== Trees (LIS)
+=== Trees (LIS)
 
 One of the most common DP problems on trees is finding the largest independent set in a tree, where no two selected nodes are adjacent.
 
@@ -1524,7 +1524,7 @@ for &u in order.iter().rev() {
 println!("{}", dp[0][0].max(dp[0][1]));
 ```
 
-==== Intervals
+=== Intervals
 
 Sometimes, DP is used with two values for an interval (i..j). Here is an example from my solution to `nio25-finale-belysning`:
 
@@ -1583,7 +1583,7 @@ for (a, b) in prices {
 
 As i described earlier, we have to find a way to precompute a DP table before running the program repeatedldy, and extract the variables from this such that the same value can be used repeatedly.
 
-==== State-based DP
+=== State-based DP
 
 In problems such as `nio24-finale-manngard`, the DP can be computed linearly by keeping track of all the different valid states. This can get a bit messy
 
@@ -1644,7 +1644,7 @@ let result = dp[n][1][1]
 println!("{}", result);
 ```
 
-==== Meet in the middle
+=== Meet in the middle
 
 This is a problem where you are given an array of integers and a target sum $S$, and the goal is to determine the number of subsets whose sum equals $S$. Trying to solve this directly will have a time complexity of $O(2^n)$, which will be too slow for $n > 30$. Instead, we can split the array in half, generate the subset sums for each half, then combine the two:
 
@@ -1694,7 +1694,7 @@ fn main() {
 }
 ```
 
-=== Binary trees
+== Binary trees
 
 A binary tree can be defined with
 
@@ -1801,7 +1801,7 @@ for &a in &xs[1..] {
   ```
 ]
 
-=== Fenwick Trees
+== Fenwick Trees
 
 A Fenwick tree / binary indexed tree is a tree structure which makes handling prefix sums more efficient. Adding a value or querying a prefix are both $O(log n)$.
 
@@ -1854,7 +1854,7 @@ fn main() {
 }
 ```
 
-=== Segment Trees
+== Segment Trees
 
 Segment trees are a type of binary trees which can efficiently compute range queries (sum, min, max, gcd, etc), perform point updates and sometimes also range updates.
 
@@ -2155,7 +2155,7 @@ impl SegmentTree {
   I have just hard-coded the `i32`-types as it becomes an unnecessary amount of complexity if i were to make everything generic, which is generally useless for competitive programming. Again, this can store the results of _any_ associative operation which also has an identity.
 ]
 
-==== Lazy propagation
+=== Lazy propagation
 
 A segment tree can be extended to allow range updates efficiently. With this tree, the time complexity is
 
@@ -2277,7 +2277,7 @@ fn main() {
 }
 ```
 
-=== DSU / Union-Find
+== DSU / Union-Find
 
 A Disjoint Set Union is a data structure that can keep track of multiple disjoint / non-overlapping sets, and can efficiently do the following operations:
 
@@ -2374,7 +2374,7 @@ for &(a, b) in &trains {
 
 This is very useful in cases where one wants to find the connected components in a graph. Instead of running a BFS search from one node, one can use a DSU to store it. Using that in this task would be $O (k (n + m))$, while using a DSU has the same time complexity but is much faster in practice because the overhead of using a BFS and queue is avoided.
 
-=== Difference arrays
+== Difference arrays
 
 Difference arrays provide a more efficient way to update all values within an interval. Instead of looping over all items in the interval $[a, b]$, one instead just sets the values at $a$ and $b$, then passes over the array afterwards. A boolean implementation could look like this (taken from my solution to `nio23-runde2-lynnedslag`):
 
@@ -2427,9 +2427,9 @@ for x in xs {
 
 Note that the previous version is actually a special case of this, in which one would use `+= x % 2` (which I have simplified to using booleans).
 
-== Various other algorithms
+= Various other algorithms
 
-=== Binary search
+== Binary search
 
 Given a sorted list, one can find a value in $O (log n)$ using binary search. This also works for any monotonic function in which one wants to find the value in which it turns, and is thus useful in many problems. Here is an example of binary search implemented with a monotonic boolean function which starts at false and then becomes true, like `[false, false, false, true, true]`.
 
@@ -2449,7 +2449,7 @@ while a <= b {
 }
 ```
 
-=== Probability
+== Probability
 
 One of the tasks usually contain some sort of probability, usually some sort of linear distribution in an interval. Here is my solution for `nio25-finale-jobbjakt`:
 
@@ -2523,7 +2523,7 @@ fn main() {
 }
 ```
 
-==== Binomial coefficient
+=== Binomial coefficient
 
 Given a set of $n$ values, the binomial coefficient tells us how many different ways we can choose $k$ objects from this set, regardless of order. It is written as
 
@@ -2576,7 +2576,7 @@ c[n][k]
 
 Here are some common problems:
 
-===== Grid path counting
+==== Grid path counting
 
 Say we have a grid of size $m times n$ and can only move right or down. In other words, one must take $n$ down moves and $m$ right moves. Thus, the total number of paths can be expressed as
 
@@ -2584,7 +2584,7 @@ $
   binom(m+n, n)
 $
 
-===== Choosing subsets
+==== Choosing subsets
 
 - "From $n$ elements, how many subsets contain excactly $k$ elements?"
 - "How many binary strings of length $n$ contain excactly $k$ ones?"
@@ -2595,7 +2595,7 @@ $
   binom(n, k)
 $
 
-===== DP
+==== DP
 
 Binomial coefficients also often appear in DP. Example: "Count ways to build a structure by choosing elements step-by-step"
 
@@ -2603,7 +2603,7 @@ $
   d p[n] = d p[k] dot binom(n, k)
 $
 
-=== Prefix Sums
+== Prefix Sums
 
 A prefix sum is a new array built from an array where each element is the sum of all previous elements in the original array up to $i$. For example:
 
@@ -2622,7 +2622,7 @@ After the prefix sum is computet, one can find the sum of a subarray in $O(1)$:
 sum(l..r) = prefix[r] - prefix[l-1];
 ```
 
-=== Sieve of Eratosthenes
+== Sieve of Eratosthenes
 
 The sieve of Erastothenes is an efficient algorithm used to find all prime numbers up to a given `n`.
 
@@ -2655,7 +2655,7 @@ is_prime.iter()
         .collect();
 ```
 
-=== Convex Hull
+== Convex Hull
 
 For a given list of points, the convex hull is the polygon with the smallest possible area while containing all points.
 
@@ -2699,7 +2699,7 @@ fn main() {
 }
 ```
 
-=== Sliding Window / Two Pointers
+== Sliding Window / Two Pointers
 
 Maximum subarray of size `k`:
 
@@ -2750,7 +2750,7 @@ for right in 0..arr.len() {
 }
 ```
 
-=== Factorial
+== Factorial
 
 It is usually best to precompute factorials using tabulation to avoid unuecessary recomputations of the same value:
 
