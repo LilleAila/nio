@@ -1236,6 +1236,48 @@ if ok {
   The graph has to have twice as many nodes as there are variables. Each variable has the true value at $2i$ and the false value at $2i+1$.
 ]
 
+==== Topological sort
+
+A topological sort is an ordering of nodes in a directed acyclic graph (DAG) such that for every directed edge $u -> v$, node $u$ comes before node $v$ in the ordering. Note that this is only possible for acyclic graphs.
+
+```rs
+use std::collections::VecDeque;
+
+let mut visited = vec![false; n];
+let mut order = VecDeque::new();
+
+for start in 0..n {
+    if visited[start] {
+        continue;
+    }
+
+    let mut stack = Vec::new();
+    stack.push((start, false));
+
+    while let Some((node, children_visited)) = stack.pop() {
+        if children_visited {
+            order.push_front(node);
+            continue;
+        }
+
+        if visited[node] {
+            continue;
+        }
+
+        visited[node] = true;
+        stack.push((node, true));
+
+        for &neighbor in graph[node].iter().rev() {
+            if !visited[neighbor] {
+                stack.push((neighbor, false));
+            }
+        }
+    }
+}
+```
+
+Now, `order` will be a `VecDeque` with the correct ordering of the nodes.
+
 ==== Minimum Spanning Tree
 
 A minimum spanning tree (MST) in a connected, weighted and undirected graph is a subset of the edges which
@@ -1600,6 +1642,56 @@ let result = dp[n][1][1]
     .min(dp[n][2][2]);
 
 println!("{}", result);
+```
+
+==== Meet in the middle
+
+This is a problem where you are given an array of integers and a target sum $S$, and the goal is to determine the number of subsets whose sum equals $S$. Trying to solve this directly will have a time complexity of $O(2^n)$, which will be too slow for $n > 30$. Instead, we can split the array in half, generate the subset sums for each half, then combine the two:
+
+```rs
+use std::collections::HashMap;
+
+fn subset_sums(xs: &[i32]) -> Vec<i32> {
+    let n = xs.len();
+    let mut sums = Vec::new();
+    for mask in 0..(1 << n) {
+        let mut sum = 0;
+        for i in 0..n {
+            if mask & (1 << i) != 0 {
+                sum += xs[i];
+            }
+        }
+        sums.push(sum);
+    }
+    sums
+}
+
+fn main() {
+    let xs = vec![1, 2, 3, 4, 5];
+    let target = 5;
+
+    let n = xs.len();
+    let left = &xs[0..n / 2];
+    let right = &xs[n / 2..];
+
+    let left_sums = subset_sums(left);
+    let right_sums = subset_sums(right);
+
+    let mut right_count = HashMap::new();
+    for &sum in &right_sums {
+        *right_count.entry(sum).or_insert(0) += 1;
+    }
+
+    let mut total = 0;
+    for &sum in &left_sums {
+        let complement = target - sum;
+        if let Some(&count) = right_count.get(&complement) {
+            total += count;
+        }
+    }
+
+    println!("Subsets with sum {}: {}", target, total);
+}
 ```
 
 === Binary trees
@@ -2063,7 +2155,127 @@ impl SegmentTree {
   I have just hard-coded the `i32`-types as it becomes an unnecessary amount of complexity if i were to make everything generic, which is generally useless for competitive programming. Again, this can store the results of _any_ associative operation which also has an identity.
 ]
 
-==== Lazy propagation (TODO)
+==== Lazy propagation
+
+A segment tree can be extended to allow range updates efficiently. With this tree, the time complexity is
+
+- Build: $O(n)$
+- Range update: $O(log n)$
+- Range query: $O(log n)$
+
+```rs
+struct SegmentTree {
+    n: usize,
+    tree: Vec<Node>,
+    lazy: Vec<i32>,
+}
+
+impl SegmentTree {
+    fn new(xs: &[i32]) -> Self {
+        let n = xs.len();
+        let mut seg = Self {
+            n,
+            tree: vec![Node::identity(); 4 * n],
+            lazy: vec![0; 4 * n],
+        };
+
+        seg.build(1, 0, n - 1, xs);
+        seg
+    }
+
+    fn build(&mut self, v: usize, l: usize, r: usize, xs: &[i32]) {
+        if l == r {
+            self.tree[v] = Node::new(xs[l]);
+            return;
+        }
+
+        let mid = (l + r) / 2;
+        self.build(v * 2, l, mid, xs);
+        self.build(v * 2 + 1, mid + 1, r, xs);
+
+        self.tree[v] = Node::combine(self.tree[v * 2], self.tree[v * 2 + 1]);
+    }
+
+    fn push(&mut self, v: usize, l: usize, r: usize) {
+        let lazy_val = self.lazy[v];
+        if lazy_val == 0 {
+            return;
+        }
+
+        let mid = (l + r) / 2;
+        let left = v * 2;
+        let right = v * 2 + 1;
+
+        self.tree[left].apply(lazy_val, (mid - l + 1) as i32);
+        self.tree[right].apply(lazy_val, (r - mid) as i32);
+
+        self.lazy[left] += lazy_val;
+        self.lazy[right] += lazy_val;
+
+        self.lazy[v] = 0;
+    }
+
+    fn update_range(&mut self, v: usize, l: usize, r: usize, ql: usize, qr: usize, val: i32) {
+        if ql > r || qr < l {
+            return;
+        }
+
+        if ql <= l && r <= qr {
+            self.tree[v].apply(val, (r - l + 1) as i32);
+            self.lazy[v] += val;
+            return;
+        }
+
+        self.push(v, l, r);
+
+        let mid = (l + r) / 2;
+
+        self.update_range(v * 2, l, mid, ql, qr, val);
+        self.update_range(v * 2 + 1, mid + 1, r, ql, qr, val);
+
+        self.tree[v] = Node::combine(self.tree[v * 2], self.tree[v * 2 + 1]);
+    }
+
+    fn query(&mut self, v: usize, l: usize, r: usize, ql: usize, qr: usize) -> Node {
+        if ql > r || qr < l {
+            return Node::identity();
+        }
+
+        if ql <= l && r <= qr {
+            return self.tree[v];
+        }
+
+        self.push(v, l, r);
+
+        let mid = (l + r) / 2;
+
+        let left = self.query(v * 2, l, mid, ql, qr);
+        let right = self.query(v * 2 + 1, mid + 1, r, ql, qr);
+
+        Node::combine(left, right)
+    }
+
+    fn update(&mut self, l: usize, r: usize, val: i32) {
+        self.update_range(1, 0, self.n - 1, l, r, val);
+    }
+
+    fn range_query(&mut self, l: usize, r: usize) -> Node {
+        self.query(1, 0, self.n - 1, l, r)
+    }
+}
+```
+
+```rs
+fn main() {
+    let xs = vec![1, 3, 5, 7, 9, 11];
+    let mut st = SegmentTree::new(&xs);
+    st.update(1, 4, 10);
+    let res = st.range_query(0, 5);
+    println!("sum = {}", res.sum);
+    println!("min = {}", res.min);
+    println!("max = {}", res.max);
+}
+```
 
 === DSU / Union-Find
 
@@ -2361,6 +2573,35 @@ for i in 0..=n {
 
 c[n][k]
 ```
+
+Here are some common problems:
+
+===== Grid path counting
+
+Say we have a grid of size $m times n$ and can only move right or down. In other words, one must take $n$ down moves and $m$ right moves. Thus, the total number of paths can be expressed as
+
+$
+  binom(m+n, n)
+$
+
+===== Choosing subsets
+
+- "From $n$ elements, how many subsets contain excactly $k$ elements?"
+- "How many binary strings of length $n$ contain excactly $k$ ones?"
+- "Distribute $n$ identical items across $k$ containers."
+- "Flip a coin $n$ times. How many ways is there to get $k$ heads?"
+
+$
+  binom(n, k)
+$
+
+===== DP
+
+Binomial coefficients also often appear in DP. Example: "Count ways to build a structure by choosing elements step-by-step"
+
+$
+  d p[n] = d p[k] dot binom(n, k)
+$
 
 === Prefix Sums
 
