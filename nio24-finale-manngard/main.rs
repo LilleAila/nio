@@ -23,7 +23,7 @@ fn main() {
     }
     let c = c;
 
-    // Each person has 3 states: dark, light, torch
+    // Each person has 3 states: dark, light, torch (torch implies light)
     let max = usize::MAX / 2;
     let mut dp: Vec<[[usize; 3]; 3]> = vec![[[max; 3]; 3]; n + 1];
     dp[0][1][1] = 0;

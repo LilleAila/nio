@@ -197,7 +197,34 @@ I prefer the first of the three, but the others can be useful if the line contai
 
 A general theme across interactive problems is to manipulate the mathematical equation used so that all the local variables are extracted, such that we can precompute the values to be used for each iteration of the program. Input and output are handled the same way as in programs with static input.
 
-=== Memory Usage (TODO)
+=== Memory Usage
+
+This table is an overview of memory usage on the stack by different types. Note that some types such as `&str` take 16 bytes on the stack, and contain a pointer to more data on the heap.
+
+#columns(2, [
+  #table(
+    columns: 2,
+    inset: 6pt,
+    [*Type*], [*Bytes*],
+    [`i8`, `u8`], [1],
+    [`i16, u16`], [2],
+    [`i32`, `u32`], [4],
+    [`i64`, `u64`], [8],
+    [`i128`, `u128`], [16],
+    [`isize`, `usize`], [8],
+    [`f32`], [4],
+    [`f64`], [8],
+    [`bool`], [1],
+    [`char`], [4],
+    [`&T`], [8],
+    [`*const T`, `*mut T`], [8],
+    [`fn()`], [8],
+    [`&[T]`], [16],
+    [`&str`], [16],
+    [`Vec<T>`], [24],
+    [`String`], [24],
+  )
+])
 
 === Strings and chars
 
@@ -327,7 +354,96 @@ fn main() {
 }
 ```
 
-==== Useful Bit Hacks (TODO)
+==== Useful Bit Hacks
+
+Check whether a number is a power of 2:
+
+```rs
+x != 0 && (x & (x - 1)) == 0;
+```
+
+Get lowest set bit:
+
+```rs
+x & (!x + 1);
+// Alternatively:
+x & x.wrapping_neg();
+```
+
+Remove the lowest set bit:
+
+```rs
+x &= x - 1;
+```
+
+Count number of set bits (popcount):
+
+```rs
+x.count_ones();
+```
+
+Get index of lowest set bit:
+
+```rs
+x.trailing_zeros();
+```
+
+Get index of highest set bit (for u64):
+
+```rs
+63 - x.leading_zeros();
+```
+
+Iterate over all subsets of a bitmask
+
+```rs
+let mut sub = mask;
+while sub > 0 {
+    sub = (sub - 1) & mask;
+}
+```
+
+Iterate over set bits
+
+```rs
+let mut x = mask;
+
+while x > 0 {
+    let bit = x & (!x + 1);
+    let idx = bit.trailing_zeros();
+    // Do something with the idx
+    x ^= bit;
+}
+```
+
+Next combination with same popcount
+
+```rs
+let u = x & (!x + 1);
+let v = x + u;
+v + (((v ^ x) / u) >> 2)
+// Example: 00111 -> 01011
+```
+
+Check if `a` is a subset of `b`:
+```rs
+(a & b) == a;
+```
+
+Toggle bits:
+
+```rs
+x ^= 1 << k; // Toggle bit
+x |= 1 << k; // Set bit
+x &= !(1 << k); // Clear bit
+(k >> x) & 1; // Check bit
+```
+
+Iterate over all masks of size `n`:
+
+```rs
+for mask in 0..(1 << n) { }
+```
 
 === Match
 
@@ -869,9 +985,256 @@ while let Some(a) = queue.pop_front() {
 }
 ```
 
-==== Strongly Connected Components (TODO)
+==== Bellman-Ford
 
-==== Floyd-Warshall (TODO)
+The time complexity of this algorithm is $O (V dot E)$. The algorithm works by iterating through all edges `n-1` times, and relaxing the edges if possible. The benefit to this compared to Dijkstra's algorithm is that it works with negative edge weights, while Dijkstra does not. In addition, this has the ability to detect negative cycles, which is a cycle with a negative total weight such that there does not exist any shortest path, as the weight will just approach $- infinity$. Here is a simple implementation in rust:
+
+```rs
+let n: usize;
+let edges: Vec<(usize, usize, i32)>; // [(from, to, weight)]
+
+let inf = i32::MAX / 2;
+let mut dist = vec![inf; n];
+let source = 0;
+dist[source] = 0;
+
+for _ in 0..n - 1 {
+    let mut changed = false; // Optional optimization
+    for &(u, v, w) in &edges {
+        if dist[u] != inf && dist[u] + w < dist[v] {
+            dist[v] = dist[u] + w;
+            changed = true;
+        }
+    }
+    if !changed {
+        break;
+    }
+}
+```
+
+In addition, negative cycles can be detected by relaxing the edges one more time:
+
+```rs
+for &(u, v, w) in &edges {
+    if dist[u] != inf && dist[u] + w < dist[v] {
+        println!("Negative cycle found!");
+        break;
+    }
+}
+```
+
+==== Floyd-Warshall
+
+The Floyd-Warshall algorithm is an algorithm for finding the all the shortest paths between any two nodes in a directed or undirected graph.
+
+```rs
+let n: usize;
+// graph[from] = [(weight, to)];
+let graph: Vec<Vec<(i32, usize)>>;
+
+let mut d = vec![vec![i32::MAX / 2; n]; n];
+for i in 0..n {
+    d[i][i] = 0;
+    for &(w, j) in &graph[i] {
+        d[i][j] = w;
+    }
+}
+for k in 0..n {
+    for i in 0..n {
+        for j in 0..n {
+            d[i][j] = d[i][j].min(d[i][k] + d[k][j]);
+        }
+    }
+}
+```
+
+This algorithm is $O(V^3)$, so it is very slow for finding a single path compared to Dijkstra's algorithm, but it will be much faster if one needs to find the minimum total weight of all paths in the graph.
+
+==== Strongly Connected Components
+
+In a directed graph, a strongly connected component is a maximal group of vertices such that for every pair of vertices $u$ and $v$ in the group, there is a path from $u -> v$ and $v -> u$. This means that every node can reach every other node following the direction of the edges.
+
+#note[
+  Here is an example:
+
+  ```
+  1 → 2 → 3
+  ↑   ↓
+  5 ← 4
+  ```
+
+  In this case, ${1, 2, 4, 5}$ form one SCC. $3$ can not reach back to the others, so it forms its own SCC.
+]
+
+If the SCC is compressed into a single node, this becomes a Directed Acyclic Graph (DAG). It is also useful for detecting cycles in directed graphs.
+
+===== Kosaraju's algorithm
+
+When the SCC has more than one node, this means that there exists a cycle. We can use Kosaraju's algorithm to take a directed graph and create the SCC from this:
+
+```rs
+// Initialize the graph
+let n = 4;
+let mut graph = vec![Vec::new(); n];
+graph[0].push(1);
+graph[1].push(2);
+graph[2].push(0);
+graph[2].push(3);
+
+// Create a reversed graph
+let mut rg = vec![Vec::new(); n];
+for v in 0..n {
+    for &to in &graph[v] {
+        rg[to].push(v);
+    }
+}
+
+// First DFS pass. This determines the order to process the nodes
+// so SCCs are discovered correctly in the second pass of DFS
+let mut visited = vec![false; n];
+let mut order = vec![];
+let mut stack = vec![];
+for i in 0..n {
+    // For each unvisited node, do a DFS starting from `i`
+    // This is used to build a "finishing order"-stack
+    if visited[i] {
+        continue;
+    }
+    stack.push((i, 0));
+    while let Some((v, state)) = stack.pop() {
+        if state == 0 {
+            if visited[v] {
+                continue;
+            }
+            visited[v] = true;
+            stack.push((v, 1));
+            for &to in &graph[v] {
+                if !visited[to] {
+                    stack.push((to, 0));
+                }
+            }
+        } else {
+            order.push(v);
+        }
+    }
+}
+
+// The second DFS explores backward connections. This ensures that the
+// DFS starting from the last finished node in the first pass will
+// only stay inside of the SCC.
+let mut component = vec![usize::MAX; n];
+let mut id = 0; // The number of components
+// As described, this iterates from the reverse finishing order.
+for &v in order.iter().rev() {
+    if component[v] != usize::MAX {
+        continue;
+    }
+    // Run a DFS for each node which is not a member of an SCC
+    let mut stack = vec![v];
+    component[v] = id;
+    while let Some(x) = stack.pop() {
+        for &to in &rg[x] {
+            if component[to] == usize::MAX {
+                component[to] = id;
+                stack.push(to);
+            }
+        }
+    }
+
+    id += 1;
+}
+
+// Each node will now have a component ID
+dbg!(&id, &component);
+```
+
+This algorithm runs DFS twice, and as such it has a time complexity of $O(V + E)$.
+
+===== Building a DAG
+
+When building a DAG from an SCC, each component becomes a single node. For every edge $u -> v$ in the original graph, if `component[u] != component[v]`, it is an edge between two SCCs and will add an edge between them in the SCC. The above algorithm can be extended as follows:
+
+```rs
+// Create the dag
+let mut dag = vec![Vec::new(); id];
+for u in 0..n {
+    for &v in &graph[u] {
+        let cu = component[u];
+        let cv = component[v];
+        if cu != cv {
+            dag[cu].push(cv);
+        }
+    }
+}
+
+// Optional deduplication (often not necessary)
+for edges in dag.iter_mut() {
+    edges.sort_unstable();
+    edges.dedup();
+}
+
+dbg!(&dag);
+```
+
+==== 2-SAT
+
+2-Satisfiability is a type of boolean problem where one has $n$ boolean variables and there are clauses of the form $a or b$, for example:
+
+```
+(x0 or x1)
+(!x0 or x2)
+(x1 or !x2)
+```
+
+We want to find out if it is possible to assign `true` / `false`-variables to satisfy all clauses. One can convert the clause $a or b$ into two implications: $a or b equiv (not a => b) or (not b => a)$. This gives two edges in a directed graph. Thus, we can create a graph where each variable corresponds to two nodes: itself and its negation, connected with these implications as edges. We can then run SCC on this graph. For 2-SAT to be satisfiable, no variable $x$ can appear in the same SCC as its negation $not x$.
+
+```rs
+// Initialize the graph
+let variables = 3;
+let n = variables * 2;
+let mut graph = vec![Vec::new(); n];
+
+let add_or = |graph: &mut Vec<Vec<usize>>, a: usize, b: usize| {
+    graph[a ^ 1].push(b);
+    graph[b ^ 1].push(a);
+};
+
+let x0 = 0;
+let nx0 = 1;
+let x1 = 2;
+let nx1 = 3;
+let x2 = 4;
+let nx2 = 5;
+
+add_or(&mut graph, x0, x1); // x0 V x1
+add_or(&mut graph, nx0, x2); // !x0 V x2
+add_or(&mut graph, nx1, nx2); // !x1 V !x2
+
+// --- Kosaraju SCC from above ---
+
+let mut ok = true;
+let mut assignment = vec![false; variables];
+for i in 0..variables {
+    if component[2 * i] == component[2 * i + 1] {
+        // x_i and !x_i were found in the same SCC
+        ok = false;
+        break;
+    } else {
+        // True if x_i's SCC comes after !x_i's SCC
+        assignment[i] = component[2 * i] > component[2 * i + 1];
+    }
+}
+
+if ok {
+    println!("Satisfiable with assignment {:?}", assignment);
+} else {
+    println!("Unsatisfiable :(");
+}
+```
+
+#note[
+  The graph has to have twice as many nodes as there are variables. Each variable has the true value at $2i$ and the false value at $2i+1$.
+]
 
 ==== Minimum Spanning Tree
 
@@ -900,13 +1263,344 @@ for (w, u, v) in edges {
 }
 ```
 
-=== DP (TODO)
+=== Dynamic Programming / DP
 
-==== Bitmask (TODO)
+Dynamic Programming (DP) is a technique to solve problems by breaking them into overlapping subproblems and storing their results to avoid recomputation. DP is applicable to a problem if it satisfies the following:
 
-==== Trees (TODO)
+- Optimal substructure: the optimal solution to the problem can be constructed from the optimal solutions of its subproblems.
+- Overlapping subproblems: the same subproblems are solved multiple times and can be "cached". DP is unnecessary if independent subproblems are computed only once.
 
-==== Sliding Window / Prefix Sums (TODO)
+Usually, the problem can be expressed as a sequence of choices, such as in knapsack. There exist two main types of DP: memoization (top-down) and tabulation (bottom-up). It is usually possible to apply both to the same problem, but i usually prefer tabulation as it avoids recursion.
+
+Here is an example of a DP problem in which I want to compute the nth fibonacci number. First, this is a solution using memoization:
+
+```rs
+use std::collections::HashMap;
+
+fn fibonacci(n: u64, memo: &mut HashMap<u64, u64>) -> u64 {
+  if n <= 1 {
+    return n;
+  }
+
+  if !memo.contains(&n) {
+    let value = fibonacci(n-1, memo) + fibonacci(n-2, memo);
+    memo.insert(n, value);
+  }
+
+  *memo.get(&n).unwrap()
+}
+```
+
+And here is the same problem, but with tabulation:
+
+```rs
+fn fibonacci(n: usize) -> u64 {
+  if n <= 1 {
+    return n as u64;
+  }
+
+  let mut dp = vec![u64::MAX; n + 1];
+  dp[0] = 1;
+  dp[1] = 1;
+  for i in 2..=n {
+    dp[i] = dp[i-1] + dp[i-2];
+  }
+
+  dp[n]
+}
+```
+
+Tabulation is usually a bit harder to implement than memoization, as it can often be applied by simply adding a memo table to memoize the outputs of a function, but tabulation can be more powerful and straightforward.
+
+If a problem looks like DP can be applied, it is usually best to first sketch the DP state and transition before trying to implement it. Here are a few examples of using DP. The common thing between them is that they all rely on making a choice for each item, and using this to define the DP.
+
+In NIO problems, DP is also often used when there is a problem in which the program computes multiple different sets of inputs during the same runtime. In this case, the solution is to extract these variables such that a DP representation can be created independently of the variables that change for each iteration of the program, then reference this and add these parameters back in afterwards. An example can be seen below in my solution to `nio25-finale-belysning` under Intervals.
+
+==== Longest increasing subsequence
+
+Given a list of values, this can be used to find the longest increasing subsequence. For example in the array `[1, 4, 0, 5]`, the LIS would be `[1, 4, 5]` with a length of 3.
+
+```rs
+let n: usize;
+let xs: Vec<i32>;
+
+let mut dp = vec![1; n];
+
+for i in 1..n {
+  for j in 0..i {
+    if xs[i] > xs[j] {
+      dp[i] = dp[i].max(dp[j] + 1);
+    }
+  }
+}
+
+let result: i32 = *dp.iter().max().unwrap();
+```
+
+==== Knapsack
+
+Given a set of values with different weights and values, we want to find the maximum value possible within the weight bounds.
+
+```rs
+let weights = vec![1, 2, 3, 2];
+let values = vec![8, 4, 0, 5];
+let capacity = 5;
+
+let n = weights.len();
+let mut dp = vec![0; capacity + 1];
+
+for i in 0..n {
+  for w in (weights[i]..=capacity).rev() {
+    dp[w] = dp[w].max(dp[w - weights[i]] + values[i]);
+  }
+}
+
+let result = dp[capacity];
+```
+
+This has time complexity $O (n k)$ where $n$ is the number of items and $k$ is the maximum capacity.
+
+==== 2D DP
+
+This is an example use of DP for finding the total number of unique paths from the top-left to the bottom-right in a grid.
+
+```rs
+let x = 3;
+let y = 3;
+
+let mut dp = vec![vec![0; x]; y];
+
+for i in 0..y {
+  for j in 0..x {
+    if i == 0 && j == 0 {
+      dp[i][j] = 1;
+    } else {
+      let up = if i > 0 { dp[i - 1][j] } else { 0 };
+      let left = if j > 0 {dp[i][j - 1] } else { 0 };
+      dp[i][j] = up + left;
+    }
+  }
+}
+
+let result = dp[y-1][x-1];
+```
+
+==== Bitmask DP
+
+Bitmasks and bitmask DP are very useful when `n` is small, often around 20. Here is an example solution for the traveling salesman problem. Here, we have a salesman who needs to visit $n$ cities excactly once and return to the starting city. Each pair of cities has a distance (cost) associated with traveling between them. The goal is to find the shortest route that visits each city excactly once and returns to the starting city.
+
+```rs
+let n = 4;
+let dist = vec![
+    vec![0, 10, 15, 20],
+    vec![10, 0, 35, 25],
+    vec![15, 35, 0, 30],
+    vec![20, 25, 30, 0],
+];
+
+let size = 1 << n;
+
+// This DP is defined by DP[mask][target city]
+// The mask is a bitmask of visited cities
+let mut dp = vec![vec![i32::MAX / 2; n]; size];
+// With 1 visited city and ending at 0, the total cost is 0
+// (not leaving the starting city)
+dp[1][0] = 0;
+
+for mask in 1..size {
+    for u in 0..n {
+        if (mask & (1 << u)) == 0 {
+            continue; // Skip if this city is not in the mask
+        }
+        for v in 0..n {
+            if (mask & (1 << v)) != 0 {
+                continue; // Skip v if it is already in the mask
+            }
+            let next_mask = mask | (1 << v);
+            dp[next_mask][v] = dp[next_mask][v].min(dp[mask][u] + dist[u][v]);
+        }
+    }
+}
+
+let mut result = i32::MAX;
+for u in 1..n {
+    // Return to start
+    result = result.min(dp[size - 1][u] + dist[u][0]);
+}
+
+println!("{}", result); // 80
+```
+
+==== Trees (LIS)
+
+One of the most common DP problems on trees is finding the largest independent set in a tree, where no two selected nodes are adjacent.
+
+```rs
+use std::collections::VecDeque;
+
+let n = 5;
+let edges = vec![(0, 1), (0, 2), (1, 3), (1, 4)];
+// Representing the tree as a graph
+let mut tree = vec![Vec::new(); n];
+for (u, v) in edges {
+    tree[u].push(v);
+    tree[v].push(u);
+}
+
+// dp[node] = [exclude, include]
+let mut dp = vec![[0, 0]; n];
+let mut parent = vec![n; n];
+let mut order = Vec::new();
+
+let mut stack = VecDeque::new();
+stack.push_back(0);
+while let Some(u) = stack.pop_back() {
+    order.push(u);
+    for &v in &tree[u] {
+        if v == parent[u] {
+            // Skip parent nodes; only traverse downwards
+            continue;
+        }
+        parent[v] = u;
+        stack.push_back(v);
+    }
+}
+
+for &u in order.iter().rev() {
+    dp[u][1] = 1;
+    for &v in &tree[u] {
+        if v == parent[u] {
+            continue;
+        };
+        // Exclude u
+        dp[u][0] += dp[v][0].max(dp[v][1]);
+        // Include u => exclude children
+        dp[u][1] += dp[v][0];
+    }
+}
+
+println!("{}", dp[0][0].max(dp[0][1]));
+```
+
+==== Intervals
+
+Sometimes, DP is used with two values for an interval (i..j). Here is an example from my solution to `nio25-finale-belysning`:
+
+```rs
+use std::convert::TryInto;
+use std::io;
+
+let [n, q]: [usize; 2]; // Read input
+
+let mut ys: Vec<usize> = Vec::new();
+for _ in 0..n {
+    let y: usize; // Read input
+    ys.push(y);
+}
+
+let mut prices: Vec<(usize, usize)> = Vec::new();
+for _ in 0..q {
+    let [a, b]: [usize; 2]; // read input
+    prices.push((a, b));
+}
+```
+
+Precompute the optimal `y`-value for a lamp in a given interval. This ignores the actual cost completely as even though the cost matters, if we have the optimal configuration of lamps for all intervals we will end up with the same total cost just using a different combination of intervals as we still only check the optimal lamp positions for a given combination of intervals.
+
+```rs
+let mut lys: Vec<Vec<usize>> = vec![vec![usize::MAX; n]; n];
+for i in 0..n {
+    for j in 0..=i {
+        let p = (j..=i)
+            .map(|lx| (lx, (j..=i).map(|x| ys[x] + lx.abs_diff(x)).max().unwrap()))
+            .map(|(lx, ly)| ly - ys[lx])
+            .min()
+            .unwrap();
+        lys[j][i] = p;
+    }
+}
+
+for (a, b) in prices {
+    let mut dp = vec![usize::MAX; n];
+
+    for i in 0..n {
+        for j in 0..=i {
+            let mut min_cost = usize::MAX;
+            for lx in j..=i {
+                let cost = a + b * lys[j][i];
+                min_cost = min_cost.min(cost);
+            }
+            let prev = if j == 0 { 0 } else { dp[j - 1] };
+            dp[i] = dp[i].min(prev + min_cost);
+        }
+    }
+
+    println!("{:?}", dp[n - 1]);
+}
+```
+
+As i described earlier, we have to find a way to precompute a DP table before running the program repeatedldy, and extract the variables from this such that the same value can be used repeatedly.
+
+==== State-based DP
+
+In problems such as `nio24-finale-manngard`, the DP can be computed linearly by keeping track of all the different valid states. This can get a bit messy
+
+```rs
+let n: usize; // Read input
+
+// NOTE: making everything 1-indexed to make DP easier
+let mut c: Vec<Vec<usize>> = vec![vec![usize::MAX; 2]; n + 1]; // x, y
+for i in 1..=n {
+    let [f, b]: [usize; 2]; // Read input
+    c[i][0] = 1000 - f;
+    c[i][1] = 1000 - b;
+}
+let c = c;
+
+// Each person has 3 states: dark, light, torch
+// (torch also implies light).
+// Note that some of the states like [0, 2] are invalid
+let max = usize::MAX / 2;
+let mut dp: Vec<[[usize; 3]; 3]> = vec![[[max; 3]; 3]; n + 1];
+dp[0][1][1] = 0;
+
+for i in 1..=n {
+    dp[i][0][0] = dp[i - 1][1][1];
+    dp[i][1][0] = dp[i - 1][2][1];
+    dp[i][0][1] = dp[i - 1][1][2];
+    dp[i][1][1] = dp[i - 1][2][2];
+
+    dp[i][2][1] = dp[i][2][1]
+        .min(dp[i - 1][0][1] + c[i][0])
+        .min(dp[i - 1][1][1] + c[i][0])
+        .min(dp[i - 1][2][1] + c[i][0])
+        .min(dp[i - 1][1][2] + c[i][0])
+        .min(dp[i - 1][2][2] + c[i][0]);
+
+    dp[i][1][2] = dp[i][1][2]
+        .min(dp[i - 1][1][0] + c[i][1])
+        .min(dp[i - 1][1][1] + c[i][1])
+        .min(dp[i - 1][2][1] + c[i][1])
+        .min(dp[i - 1][1][2] + c[i][1])
+        .min(dp[i - 1][2][2] + c[i][1]);
+
+    dp[i][2][2] = dp[i][2][2]
+        .min(dp[i - 1][0][0] + c[i][0] + c[i][1])
+        .min(dp[i - 1][1][0] + c[i][0] + c[i][1])
+        .min(dp[i - 1][0][1] + c[i][0] + c[i][1])
+        .min(dp[i - 1][1][1] + c[i][0] + c[i][1])
+        .min(dp[i - 1][2][1] + c[i][0] + c[i][1])
+        .min(dp[i - 1][1][2] + c[i][0] + c[i][1])
+        .min(dp[i - 1][2][2] + c[i][0] + c[i][1]);
+}
+
+let result = dp[n][1][1]
+    .min(dp[n][2][1])
+    .min(dp[n][1][2])
+    .min(dp[n][2][2]);
+
+println!("{}", result);
+```
 
 === Binary trees
 
@@ -1015,9 +1709,361 @@ for &a in &xs[1..] {
   ```
 ]
 
-=== Fenwick Trees (TODO)
+=== Fenwick Trees
 
-=== Segment Trees (TODO)
+A Fenwick tree / binary indexed tree is a tree structure which makes handling prefix sums more efficient. Adding a value or querying a prefix are both $O(log n)$.
+
+```rs
+struct FenwickTree {
+    bit: Vec<i32>,
+    n: usize,
+}
+
+impl FenwickTree {
+    fn new(n: usize) -> Self {
+        Self {
+            bit: vec![0; n + 1],
+            n,
+        }
+    }
+
+    fn update(&mut self, mut i: usize, val: i32) {
+        i += 1;
+        while i <= self.n {
+            self.bit[i] += val;
+            i += i & (!i + 1).wrapping_neg();
+        }
+    }
+
+    fn query(&self, mut i: usize) -> i32 {
+        i += 1;
+        let mut sum = 0;
+        while i > 0 {
+            sum += self.bit[i];
+            i -= i & (!i + 1).wrapping_neg();
+        }
+        sum
+    }
+}
+
+fn main() {
+    let xs = vec![1, 2, 3, 4, 5];
+    let mut ft = FenwickTree::new(xs.len());
+    for (i, &val) in xs.iter().enumerate() {
+        ft.update(i, val);
+    }
+
+    println!("{}", ft.query(2)); // first 3 elements: 1 + 2 + 3 = 6
+    ft.update(1, 5); // Add 5 to xs[1]
+    println!("{}", ft.query(2)); // first 3 elements: 1 + 7 + 3 = 11
+
+    // Sum of range (1..=4)
+    println!("{}", ft.query(4) - ft.query(0)); // 7 + 3 + 4 + 5
+}
+```
+
+=== Segment Trees
+
+Segment trees are a type of binary trees which can efficiently compute range queries (sum, min, max, gcd, etc), perform point updates and sometimes also range updates.
+
+The time complexity is:
+
+- Build: $O(n)$
+- Query: $O(log n)$
+- Update: $O(log n)$
+
+Segment trees are like fenwick trees but much more flexible. Here is a simple segment tree implementation in rust:
+
+```rs
+struct SegmentTree {
+    n: usize,
+    tree: Vec<i32>,
+}
+
+impl SegmentTree {
+    fn new(xs: &[i32]) -> Self {
+        let n = xs.len();
+        let mut tree = vec![0; 2 * n];
+
+        for i in 0..n {
+            tree[n + i] = xs[i];
+        }
+        for i in (1..n).rev() {
+            tree[i] = tree[2 * i] + tree[2 * i + 1];
+        }
+
+        Self { n, tree }
+    }
+
+    fn update(&mut self, mut i: usize, val: i32) {
+        i += self.n;
+        self.tree[i] = val;
+        while i > 1 {
+            i /= 2;
+            self.tree[i] = self.tree[2 * i] + self.tree[2 * i + 1];
+        }
+    }
+
+    fn query(&self, mut l: usize, mut r: usize) -> i32 {
+        l += self.n;
+        r += self.n;
+        let mut sum = 0;
+
+        while l <= r {
+            if l % 2 == 1 {
+                sum += self.tree[l];
+                l += 1;
+            }
+            if r % 2 == 0 {
+                sum += self.tree[r];
+                r -= 1;
+            }
+            l /= 2;
+            r /= 2;
+        }
+
+        sum
+    }
+}
+
+fn main() {
+    let xs = vec![1, 2, 3, 4, 5];
+    let mut st = SegmentTree::new(&xs);
+
+    // Sum of range (1..=3)
+    println!("{}", st.query(1, 3)); // 2 + 3 + 4
+    st.update(2, 10); // xs[2] = 10
+    println!("{}", st.query(1, 3)); // 2 + 10 + 4
+}
+```
+
+The important part here is the `query`-function. It can be changed to anything, for example `.min()`, `.max()`, etc. Here is a more generic implementation which supports this:
+
+```rs
+struct SegmentTree<T, F>
+where
+    T: Copy,
+    F: Fn(T, T) -> T,
+{
+    n: usize,
+    tree: Vec<T>,
+    combine: F,
+    identity: T,
+}
+
+impl<T, F> SegmentTree<T, F>
+where
+    T: Copy,
+    F: Fn(T, T) -> T,
+{
+    fn new(xs: &[T], identity: T, combine: F) -> Self {
+        let n = xs.len();
+        let mut tree = vec![identity; 2 * n];
+
+        for i in 0..n {
+            tree[n + i] = xs[i];
+        }
+        for i in (1..n).rev() {
+            tree[i] = combine(tree[2 * i], tree[2 * i + 1]);
+        }
+
+        Self {
+            n,
+            tree,
+            combine,
+            identity,
+        }
+    }
+
+    fn update(&mut self, mut i: usize, val: T) {
+        i += self.n;
+        self.tree[i] = val;
+        while i > 1 {
+            i /= 2;
+            self.tree[i] = (self.combine)(self.tree[2 * i], self.tree[2 * i + 1]);
+        }
+    }
+
+    fn query(&self, mut l: usize, mut r: usize) -> T {
+        l += self.n;
+        r += self.n;
+
+        let mut res_l = self.identity;
+        let mut res_r = self.identity;
+
+        while l <= r {
+            if l % 2 == 1 {
+                res_l = (self.combine)(res_l, self.tree[l]);
+                l += 1;
+            }
+            if r % 2 == 0 {
+                res_r = (self.combine)(self.tree[r], res_r);
+                r -= 1;
+            }
+            l /= 2;
+            r /= 2;
+        }
+
+        (self.combine)(res_l, res_r)
+    }
+}
+```
+
+With this, one can use different types of operations. The previous functionality can be obtained with
+
+```rs
+let mut st = SegmentTree::new(&xs, 0, |a, b| a + b);
+```
+
+One could also find the GCD with:
+
+```rs
+fn gcd(mut a: i32, mut b: i32) -> i32 {
+    while b != 0 {
+        let t = b;
+        b = a % b;
+        a = t;
+    }
+    a
+}
+
+let mut st = SegmentTree::new(&xs, 0, gcd);
+```
+
+Frequency:
+
+```rs
+let xs = vec![1,0,1,1,0,1];
+let mut st = SegmentTree::new(&xs, 0, |a , b| a + b);
+```
+
+Here is an overview of other operations one could do:
+
+#table(
+  columns: 3,
+  [*Query type*], [*Comnbine function*], [*Identity*],
+  [Sum], [$a + b$], [$0$],
+  [Minimum], [$min(a, b)$], [$infinity$],
+  [Maximum], [$max(a, b)$], [$-infinity$],
+  [XOR], [`a ^ b`], [$0$],
+  [GCD], [$gcd(a, b)$], [$0$],
+  [LCM], [$lcm(a, b)$], [$1$],
+  [AND], [$a thin \& thin b$], [$! thin 0$],
+  [OR], [$a thin "|" thin b$], [$0$],
+  [Product], [$a * b$], [$1$],
+  [Count / Frequency], [$a + b$], [$0$],
+  [Boolean OR], [$a thin "||" thin b$], [$"false"$],
+  [Boolean AND], [$a thin "&&" thin b$], [$"true"$],
+)
+
+For any segment tree operation, it must be associative. This means that it must satisfy
+
+$
+  f(a, f(b, c)) = f(f(a, b), c)
+$
+
+It must also have an identity which satisfies
+
+$
+  f("identity", x) = x
+$
+
+If both of these apply, it is possible to use it in a segment tree. One can also create a `Node`-struct which stores multiple of these values at the same time. It can for example be used as such:
+
+```rs
+#[derive(Clone, Copy)]
+struct Node {
+    sum: i32,
+    min: i32,
+    max: i32,
+}
+
+impl Node {
+    fn new(x: i32) -> Self {
+        Self {
+            sum: x,
+            min: x,
+            max: x,
+        }
+    }
+
+    fn identity() -> Self {
+        Self {
+            sum: 0,
+            min: i32::MAX,
+            max: i32::MIN,
+        }
+    }
+
+    fn combine(a: Self, b: Self) -> Self {
+        Self {
+            sum: a.sum + b.sum,
+            min: a.min.min(b.min),
+            max: a.max.max(b.max),
+        }
+    }
+}
+
+struct SegmentTree {
+    n: usize,
+    tree: Vec<Node>,
+}
+
+impl SegmentTree {
+    fn new(xs: &[i32]) -> Self {
+        let n = xs.len();
+        let mut tree = vec![Node::identity(); 2 * n];
+
+        for i in 0..n {
+            tree[n + i] = Node::new(xs[i]);
+        }
+        for i in (1..n).rev() {
+            tree[i] = Node::combine(tree[2 * i], tree[2 * i + 1]);
+        }
+
+        Self { n, tree }
+    }
+
+    fn update(&mut self, mut i: usize, val: i32) {
+        i += self.n;
+        self.tree[i] = Node::new(val);
+
+        while i > 1 {
+            i /= 2;
+            self.tree[i] = Node::combine(self.tree[2 * i], self.tree[2 * i + 1]);
+        }
+    }
+
+    fn query(&self, mut l: usize, mut r: usize) -> Node {
+        l += self.n;
+        r += self.n;
+
+        let mut res_l = Node::identity();
+        let mut res_r = Node::identity();
+
+        while l <= r {
+            if l % 2 == 1 {
+                res_l = Node::combine(res_l, self.tree[l]);
+                l += 1;
+            }
+            if r % 2 == 0 {
+                res_r = Node::combine(self.tree[r], res_r);
+                r -= 1;
+            }
+            l /= 2;
+            r /= 2;
+        }
+
+        Node::combine(res_l, res_r)
+    }
+}
+```
+
+#note[
+  I have just hard-coded the `i32`-types as it becomes an unnecessary amount of complexity if i were to make everything generic, which is generally useless for competitive programming. Again, this can store the results of _any_ associative operation which also has an identity.
+]
+
+==== Lazy propagation (TODO)
 
 === DSU / Union-Find
 
@@ -1265,10 +2311,224 @@ fn main() {
 }
 ```
 
-=== Prefix Sums (TODO)
+==== Binomial coefficient
 
-=== Sieve of Eratosthenes (TODO)
+Given a set of $n$ values, the binomial coefficient tells us how many different ways we can choose $k$ objects from this set, regardless of order. It is written as
 
-=== Convex Hull (TODO)
+$
+  binom(n, k) = (n!)/(k!(n-k)!)
+$
 
-=== Sliding Window / Two Pointers (TODO)
+Note that $k!(n-k)!$ means that we can set $k$ to $n-k$ and get the same result. Here is an implementation in rust taking advantage of this algorithm, which runs in $O(n)$.
+
+```rs
+fn binom(n: u64, k: u64) {
+  let k = k.min(n - k);
+  let mut result = 1;
+
+  for i in 0..k {
+    result = result * (n - i) / (i + 1);
+  }
+
+  result
+}
+```
+
+This is the same as Pascal's triangle:
+
+```rs
+1
+1 1
+1 2 1
+1 3 3 1
+1 4 6 4 1
+```
+
+With this, we can use DP to build a table of binomial coefficients. This essentially uses tabulation to create Pascal's triangle, then reads the value from that. The benefit to the DP method is that it also stores the previous results. `k` could be substituted with `n` to generate the full triangle and be able to get all binomial coefficients up to $binom(n, n)$. This algorithm is $O (n k)$.
+
+```rs
+let mut c = vec![vec![0; k + 1]; n + 1];
+
+for i in 0..=n {
+    for j in 0..=k.min(i) {
+        if j == 0 || j == i {
+            c[i][j] = 1;
+        } else {
+            c[i][j] = c[i - 1][j - 1] + c[i - 1][j];
+        }
+    }
+}
+
+c[n][k]
+```
+
+=== Prefix Sums
+
+A prefix sum is a new array built from an array where each element is the sum of all previous elements in the original array up to $i$. For example:
+
+```rs
+a = [2, 4, 1, 3];
+prefix[0] = 2;
+prefix[1] = 2 + 4;
+prefix[2] = 2 + 4 + 1;
+prefix[3] = 2 + 4 + 1 + 3;
+prefix = [2, 6, 7, 10];
+```
+
+After the prefix sum is computet, one can find the sum of a subarray in $O(1)$:
+
+```rs
+sum(l..r) = prefix[r] - prefix[l-1];
+```
+
+=== Sieve of Eratosthenes
+
+The sieve of Erastothenes is an efficient algorithm used to find all prime numbers up to a given `n`.
+
+```rs
+fn sieve(n: usize) -> Vec<bool> {
+  let mut is_prime = vec![true; n + 1];
+  if n >= 0 { is_prime[0] = false; }
+  if n >= 1 { is_prime[1] = false; }
+
+  for p in 2..=((n as f64).sqrt() as usize) {
+    if is_prime[p] {
+      let mut multiple = p * p;
+      while multiple <= n {
+        is_prime[multiple] = false;
+        multiple += p;
+      }
+    }
+  }
+
+  is_prime
+}
+```
+
+And a `Vec` of primes can be created with
+
+```rs
+is_prime.iter()
+        .enumerate()
+        .filter_map(|(i, &prime)| if prime { Some(i) } else { None })
+        .collect();
+```
+
+=== Convex Hull
+
+For a given list of points, the convex hull is the polygon with the smallest possible area while containing all points.
+
+```rs
+fn cross(o: (i64, i64), a: (i64, i64), b: (i64, i64)) -> i64 {
+    (a.0 - o.0) * (b.1 - o.1) - (a.1 - o.1) * (b.0 - o.0)
+}
+
+fn convex_hull(mut pts: Vec<(i64, i64)>) -> Vec<(i64, i64)> {
+    if pts.len() <= 1 {
+        return pts;
+    }
+    pts.sort();
+
+    let mut lower = vec![];
+    for &p in &pts {
+        while lower.len() >= 2 && cross(lower[lower.len() - 2], lower[lower.len() - 1], p) <= 0 {
+            lower.pop();
+        }
+        lower.push(p);
+    }
+
+    let mut upper = vec![];
+    for &p in pts.iter().rev() {
+        while upper.len() >= 2 && cross(upper[upper.len() - 2], upper[upper.len() - 1], p) <= 0 {
+            upper.pop();
+        }
+        upper.push(p);
+    }
+
+    lower.pop();
+    upper.pop();
+    lower.extend(upper);
+    lower
+}
+
+fn main() {
+    let points = vec![(0, 0), (1, 1), (2, 2), (2, 0), (0, 2), (1, 0)];
+    let hull = convex_hull(points);
+    println!("{:?}", hull); // [(0, 0), (2, 0), (2, 2), (0, 2)]
+}
+```
+
+=== Sliding Window / Two Pointers
+
+Maximum subarray of size `k`:
+
+```rs
+let mut sum: i32 = arr.iter().take(k).sum();
+let mut max_sum = sum;
+
+for i in k..arr.len() {
+    sum += arr[i] - arr[i - k];
+    max_sum = max_sum.max(sum);
+}
+```
+
+Find all pairs with sum `<= S` in $O(n)$:
+
+```rs
+arr.sort();
+let mut i = 0;
+let mut j = arr.len() as i32 - 1;
+let mut count = 0;
+
+while i < j as usize {
+    if arr[i] + arr[j as usize] <= s {
+        count += j - i as i32;
+        i += 1;
+    } else {
+        j -= 1;
+    }
+}
+```
+
+Longest subarray with sum `<= k`:
+
+```rs
+let mut sum = 0;
+let mut left = 0;
+let mut max_len = 0;
+
+for right in 0..arr.len() {
+    sum += arr[right];
+
+    while sum > k && left <= right {
+        sum -= arr[left];
+        left += 1;
+    }
+
+    max_len = max_len.max(right - left + 1);
+}
+```
+
+=== Factorial
+
+It is usually best to precompute factorials using tabulation to avoid unuecessary recomputations of the same value:
+
+```rs
+let mut factorial: Vec<u64> vec![0; n + 1];
+factorial[0] = 1;
+for i in 1..=n {
+  factorial[i] = i * factorial[i - 1];
+}
+```
+
+As described earlier, we usually when dealing with large numbers want do to $mod (10^9 + 7)$:
+
+```rs
+const MOD: u64 = 1_000_000_007;
+
+let mut factorial: Vec<u64> vec![0; n + 1];
+factorial[0] = 1;
+for i in 1..=n {
+  factorial[i] = i * factorial[i - 1] % MOD;
+}
+```
