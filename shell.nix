@@ -21,6 +21,8 @@ mkShell {
 
     gcc
     clang-tools
+    gdb
+    lldb
 
     prettierd
   ];
