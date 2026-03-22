@@ -11,7 +11,7 @@
   header: {
     grid(
       columns: (1fr, auto),
-      [NIO Cheatsheet], align(right)[Olai Solsvik],
+      [NIO Cheatsheet 1 (rust)], align(right)[Olai Solsvik],
     )
     line(length: 100%)
   },

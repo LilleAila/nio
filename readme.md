@@ -1,6 +1,8 @@
-# NIO
+# Competitive programming solutions
 
-## Running the code
+## NIO
+
+### Running the code
 
 This replicates excactly how it is run on the competition server, however LSP support is limited / non existant when working on standalone rust files outside of a cargo project.
 
@@ -23,59 +25,61 @@ edition = "2015"
 
 Most notably, this applies to the `try_into`-function which has to be imported in the `2015`-version of rust.
 
-## Oversikt over poeng på oppgavene
+### Oversikt over poeng på oppgavene
 
-| Points (/100) | Name                                     | Done in competition |
-| ------------- | ---------------------------------------- | ------------------- |
-| 0             | `nio16-finale-reven`                     |                     |
-| 0             | `nio18-finale-klassebilde`               |                     |
-| 60            | `nio21-runde2-tetris`                    |                     |
-| 100           | `nio21-finale-togtur`                    |                     |
-| 100           | `nio22-finale-brusskap`                  |                     |
-| 100           | `nio23-runde2-lynnedslag`                |                     |
-| 100           | `nio23-runde2-bananbonanza`              |                     |
-| 27            | `nio23-runde2-personlighetstyper`        |                     |
-| 0             | `nio23-runde2-nettverkssikkerhet`        |                     |
-| 80            | `nio23-finale-ekornfare`                 |                     |
-| 100           | `nio23-finale-noekkelkort`               |                     |
-| 41            | `nio23-finale-koehatter`                 |                     |
-| 0             | `nio23-finale-rakettvitenskap`           |                     |
-| 0             | `nio23-finale-practice-statisksortering` |                     |
-| 65            | `nio24-runde2-tognett`                   |                     |
-| 100           | `nio24-finale-sokkeskuff`                |                     |
-| 100           | `nio24-finale-regnbuelakris`             |                     |
-| 100           | `nio24-finale-manngard`                  |                     |
-| 100           | `nio24-finale-trebygger`                 |                     |
-| 18            | `nio24-finale-fiender`                   |                     |
-| 100           | `nio25-runde2-byggeklosser`              |                     |
-| 15            | `nio25-runde2-oyberedskap`               |                     |
-| 16            | `nio25-runde2-tennis`                    |                     |
-| 0             | `nio25-runde2-utjevning`                 |                     |
-| 100           | `nio25-finale-papirfly`                  |                     |
-| 100           | `nio25-finale-runddans`                  |                     |
-| 11            | `nio25-finale-ormhull`                   |                     |
-| 100           | `nio25-finale-belysning`                 |                     |
-| 91            | `nio25-finale-jobbjakt`                  |                     |
-| 41            | `nio26-runde2-logistikkdroem`            | x                   |
-| 85            | `nio26-runde2-romfart`                   | x                   |
-| 100           | `nio26-runde2-klatrevegger`              | x                   |
-| 100           | `nio26-runde2-tradisjonsmat`             | x                   |
-| 100           | `nio26-runde2-tannhelse`                 | x                   |
+| Points (/100) | Name                                     |
+| ------------- | ---------------------------------------- |
+| 0             | `nio16-finale-reven`                     |
+| 0             | `nio18-finale-klassebilde`               |
+| 60            | `nio21-runde2-tetris`                    |
+| 100           | `nio21-finale-togtur`                    |
+| 100           | `nio22-finale-brusskap`                  |
+| 100           | `nio23-runde2-lynnedslag`                |
+| 100           | `nio23-runde2-bananbonanza`              |
+| 27            | `nio23-runde2-personlighetstyper`        |
+| 0             | `nio23-runde2-nettverkssikkerhet`        |
+| 80            | `nio23-finale-ekornfare`                 |
+| 100           | `nio23-finale-noekkelkort`               |
+| 41            | `nio23-finale-koehatter`                 |
+| 0             | `nio23-finale-rakettvitenskap`           |
+| 0             | `nio23-finale-practice-statisksortering` |
+| 65            | `nio24-runde2-tognett`                   |
+| 100           | `nio24-finale-sokkeskuff`                |
+| 100           | `nio24-finale-regnbuelakris`             |
+| 100           | `nio24-finale-manngard`                  |
+| 100           | `nio24-finale-trebygger`                 |
+| 18            | `nio24-finale-fiender`                   |
+| 100           | `nio25-runde2-byggeklosser`              |
+| 15            | `nio25-runde2-oyberedskap`               |
+| 16            | `nio25-runde2-tennis`                    |
+| 0             | `nio25-runde2-utjevning`                 |
+| 100           | `nio25-finale-papirfly`                  |
+| 100           | `nio25-finale-runddans`                  |
+| 11            | `nio25-finale-ormhull`                   |
+| 100           | `nio25-finale-belysning`                 |
+| 91            | `nio25-finale-jobbjakt`                  |
+| 41            | `nio26-runde2-logistikkdroem`            |
+| 85            | `nio26-runde2-romfart`                   |
+| 100           | `nio26-runde2-klatrevegger`              |
+| 100           | `nio26-runde2-tradisjonsmat`             |
+| 100           | `nio26-runde2-tannhelse`                 |
+| 100           | `nio26-finale-skattekartet`              |
+| 100           | `nio26-finale-kretskort`                 |
 
-## Deltakelser i rundene
+### Deltakelser i rundene
 
-### 2025/26
+#### 2025/26
 
 - Runde 1: 39/40 poeng, 5. plass
 - Runde 2: 428/500 poeng, 13. plass
 - Finale: 219/500 poeng, 6. plass
 
-### 2024/25
+#### 2024/25
 
 - Runde 1: 39/44 poeng, 31. plass
 - Runde 2: ¯\\_(ツ)_/¯
 
-### 2022/23
+#### 2022/23
 
 - Runde 1: 28/40 poeng, 185. plass
 - Runde 2: ¯\\_(ツ)_/¯
