@@ -148,7 +148,37 @@ for (int i = 0; i < n; i++) {
 }
 ```
 
-Reading $n$ values from the same line: TODO
+Reading $n$ values from the same line is best done using a stringstream:
+
+```cpp
+#include <sstream>
+#include <iostream>
+
+string line;
+getline(cin, line);
+stringstream ss(line);
+vector<int> xs;
+int x;
+while (ss >> x) {
+  xs.push_back(x);
+}
+```
+
+Alternatively, if the number of values is known (which applies to most problems), it can be simplified to avoid using a stringstream:
+
+```cpp
+#include <iostream>
+#include <vector>
+
+int n;
+cin >> n;
+vector<int> xs;
+while (n--) {
+  int x;
+  cin >> x;
+  xs.push_back(x);
+}
+```
 
 == Binary
 

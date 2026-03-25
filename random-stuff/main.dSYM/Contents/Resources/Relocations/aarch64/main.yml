@@ -1,0 +1,13 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     main
+relocations:
+  - { offset: 0x7A3B, size: 0x8, addend: 0x0, symName: __ZStL8__ioinit, symObjAddr: 0x252E0, symBinAddr: 0x1000080B8, symSize: 0x0 }
+  - { offset: 0x7D18, size: 0x8, addend: 0x0, symName: __GLOBAL__sub_I_13.cpp, symObjAddr: 0x6E0, symBinAddr: 0x100003700, symSize: 0x3C }
+  - { offset: 0x8064, size: 0x8, addend: 0x0, symName: __ZNSt6vectorIiSaIiEE17_M_realloc_appendIJRKiEEEvDpOT_, symObjAddr: 0x124, symBinAddr: 0x1000035C4, symSize: 0x124 }
+  - { offset: 0x87E4, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x280, symBinAddr: 0x100003740, symSize: 0x418 }
+  - { offset: 0x8F03, size: 0x8, addend: 0x0, symName: __ZNKSt5ctypeIcE8do_widenEc, symObjAddr: 0x0, symBinAddr: 0x1000034A0, symSize: 0x20 }
+  - { offset: 0x8F30, size: 0x8, addend: 0x0, symName: __ZNSt12_Vector_baseIiSaIiEED2Ev.isra.0, symObjAddr: 0x20, symBinAddr: 0x1000034C0, symSize: 0x40 }
+  - { offset: 0x9021, size: 0x8, addend: 0x0, symName: __ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.isra.0, symObjAddr: 0x60, symBinAddr: 0x100003500, symSize: 0x84 }
+  - { offset: 0x90C1, size: 0x8, addend: 0x0, symName: __ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.isra.0, symObjAddr: 0xE4, symBinAddr: 0x100003584, symSize: 0x40 }
+...

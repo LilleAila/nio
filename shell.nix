@@ -25,5 +25,7 @@ mkShell {
     lldb
 
     prettierd
+
+    hyperfine
   ];
 }
