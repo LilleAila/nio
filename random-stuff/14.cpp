@@ -85,29 +85,29 @@ struct SegmentTree {
 
   void build(const vector<int> &xs) {
     for (int i = 0; i < n; i++) {
-      tree[n + i] = xs[i];
+      tree[i + n] = xs[i];
     }
 
-    for (int i = n - 1; i > 0; --i) {
-      tree[i] = tree[i * 2] + tree[i * 2 + 1];
-    }
-  }
-
-  void update(int p, int value) {
-    for (tree[p += n] = value; p > 1; p /= 2) {
-      tree[p / 2] = tree[p] + tree[p ^ 1];
+    for (int i = n - 1; i > 0; i--) {
+      tree[i] = tree[i << 1] + tree[i << 1 | 1];
     }
   }
 
-  int query(int l, int r) {
-    int result = 0;
-    for (l += n, r += n + 1; l < r; l /= 2, r /= 2) {
+  void update(int i, int x) {
+    for (tree[i += n] = x; i > 1; i /= 2) {
+      tree[i >> 1] = tree[i] + tree[i ^ 1];
+    }
+  }
+
+  int query(int l, int r) const {
+    int acc = 0;
+    for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
       if (l & 1)
-        result += tree[l++];
+        acc += tree[l++];
       if (r & 1)
-        result += tree[--r];
+        acc += tree[--r];
     }
-    return result;
+    return acc;
   }
 };
 
@@ -129,7 +129,7 @@ int main() {
   cout << fw.query(3, 5) << endl;
   cout << fw.query(2, 4) << endl;
 
-  // NOTE: the segment tree is 0-indexed
+  // NOTE: the segment tree is 0-indexed and uses closed intervals
   cout << "Segment Tree (recursive):" << endl;
   SegmentTreeRecursive st(n);
   st.build(xs);
@@ -138,11 +138,16 @@ int main() {
   cout << st.query(2, 4) << endl;
   cout << st.query(1, 3) << endl;
 
+  // NOTE: this segment tree is 0-intexed and uses half-open intervals [l, r)
   cout << "Segment Tree (iterative):" << endl;
   SegmentTree st2(n);
   st2.build(xs);
-  cout << st2.query(0, 0) << endl;
-  cout << st2.query(0, 4) << endl;
-  cout << st2.query(2, 4) << endl;
-  cout << st2.query(1, 3) << endl;
+  cout << "[ ";
+  for (const auto &x : st2.tree)
+    cout << x << " ";
+  cout << "]" << endl;
+  cout << st2.query(0, 1) << endl;
+  cout << st2.query(0, 5) << endl;
+  cout << st2.query(2, 5) << endl;
+  cout << st2.query(1, 4) << endl;
 }
