@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <numeric>
 using namespace std;
 
 int main() {
@@ -10,20 +9,19 @@ int main() {
   int n, k;
   cin >> n >> k;
 
-  vector<int> ds(n+1, 0);
+  vector<bool> ds(n+1, false);
   while (k--) {
     int a, b;
     cin >> a >> b;
-    ds[a] += 1;
-    ds[b + 1] -= 1;
+    ds[a] = !ds[a];
+    ds[b + 1] = !ds[b+1];
   }
 
-  vector<int> prefix(n+1);
-  partial_sum(ds.begin(), ds.end(), prefix.begin());
-
+  int state = 1;
   int houses = 0;
-  for (const auto &x : prefix) {
-    if (x % 2 == 0) {
+  for (int i = 0; i <= n; i++) {
+    state ^= ds[i];
+    if (state) {
       houses++;
     }
   }
