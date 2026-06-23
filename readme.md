@@ -73,6 +73,7 @@ Most notably, this applies to the `try_into`-function which has to be imported i
 - Runde 1: 39/40 poeng, 5. plass
 - Runde 2: 428/500 poeng, 13. plass
 - Finale: 219/500 poeng, 6. plass
+- BOI: 124 poeng, honourable mention
 
 #### 2024/25
 
