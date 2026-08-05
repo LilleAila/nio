@@ -34,16 +34,17 @@ int main() {
   cout.tie(nullptr);
   cerr.tie(nullptr);
 
-  int n, m, k, t;
-  cin >> n >> m >> k >> t;
+  int n, q;
+  cin >> n >> q;
 
-  vector<vector<pair<int, bool>>> adj(n);
-  for (int i = 0; i < m; ++i) {
+  DSU dsu(n);
+
+  while (q--) {
+    char action;
     int a, b;
-    string s;
-    cin >> a >> b >> s;
-    bool imposter = s == "imposter";
-    adj[a].push_back({b, imposter});
-    adj[b].push_back({a, imposter});
+    cin >> action >> a >> b;
+
+    if (action == '=') dsu.join(a, b);
+    else cout << (dsu.find(a) == dsu.find(b) ? "yes" : "no") << "\n";
   }
 }
