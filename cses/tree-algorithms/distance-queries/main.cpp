@@ -31,6 +31,8 @@ int lca(int u, int v) {
     }
   }
 
+  if (u == v) return u;
+
   // Loop to replicate the functionality of bit_ceil from c++20
   // Find the lowest value of k such that 2^k is >= beight[u]
   // This should return the minimum k which resolves to the root node
@@ -81,7 +83,7 @@ int main() {
   dest.assign(K, vector<int>(n));
   dest[0] = parent;
   for (int k = 1; k < K; ++k) {
-    for (int i = 1; i <= n; ++i) {
+    for (int i = 0; i < n; ++i) {
       dest[k][i] = dest[k-1][dest[k-1][i]];
     }
   }
