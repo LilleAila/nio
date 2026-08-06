@@ -28,7 +28,6 @@ impl DSU {
             return false;
         }
         if self.size[px] < self.size[py] {
-            // Add the smaller set to the larger
             std::mem::swap(&mut px, &mut py);
         }
         self.parent[py] = px;
